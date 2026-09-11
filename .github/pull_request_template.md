@@ -1,28 +1,24 @@
 ## Short description of PR
-<span style="color:gray; font-style:italic">What does your code do?</span>
-> <span style="color:gray; font-style:italic">Write here... </span>
+***What does your code do?***
+> Write here...
 
 ## Checklist for PR-creator
-<span style="color:gray; font-style:italic">Creator verifies the following before creating the PR</span>
+***Creator verifies the following before creating the PR***
 - [ ] Is branch updated with main?
 - [ ] Does code run without issues at runtime?
-- [ ] Are all code editor warnings fixed? <span style="color:gray">Ex. unused variables / imports</span> 
+- [ ] Are all code editor warnings fixed? *Ex. unused variables / imports*
 
 ## Notes for reviewer
-<span style="color:gray; font-style:italic">Things you want the reviewer to know beforehand</span>
-> <span style="color:gray"> Write here...</span>
+***Things you want the reviewer to know beforehand***
+> Write here...
 
 ## Checklist for reviewer
-<span style="color:gray; font-style:italic">
-    <ul>
-        <li>Creator adds relevant code to be reviewed
-        <li>Reviewer checks off if working
-    </ul>
-</span>
+***- Creator adds relevant code to be reviewed***
+***- Reviewer checks off if working***
 
-- [ ] <span style="color:gray">Ex. added button to homepage..</span> 
+- [ ] *Ex. added button to homepage..*
 - [ ] ...
 
 ## Notes by reviewer
-<span style="color:gray; font-style:italic">Things you want the creator to know before merging</span>
-> <span style="color:gray"> Write here...</span>
+***Things you want the creator to know before merging***
+> Write here...

@@ -18,7 +18,3 @@
 
 - [ ] *Ex. added button to homepage..*
 - [ ] ...
-
-## Notes by reviewer
-***Things you want the creator to know before merging***
-> Write here...

@@ -11,7 +11,13 @@ jobs:
       - name: Send Discord notification
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          ACTOR: ${{ github.actor }}
+          MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
         run: |
-          curl -X POST -H "Content-Type: application/json" \
-          -d "{\"content\": \"**${{ github.actor }}** pushed to \`main\`: ${{ github.event.head_commit.message }}\n${{ github.event.head_commit.url }}\"}" \
-          $DISCORD_WEBHOOK_URL
+          PAYLOAD=$(jq -n \
+            --arg actor "$ACTOR" \
+            --arg msg "$MESSAGE" \
+            --arg url "$COMMIT_URL" \
+            '{content: "**\($actor)** pushed to `main`: \($msg)\n\($url)"}')
+          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"

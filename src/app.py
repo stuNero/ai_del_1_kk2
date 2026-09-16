@@ -1,6 +1,4 @@
 import streamlit as st
-
-
 st.set_page_config(page_title="My cool app")
 
 mental_health = st.selectbox("Mental Health Status", ["Critical", "Needs attention","Healthy"])
@@ -37,4 +35,3 @@ data = [
     chronic_stress[0],
     chronic_stress[1]
     ]
-st.write(data)

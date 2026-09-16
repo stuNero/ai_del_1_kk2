@@ -1,5 +1,5 @@
 import streamlit as st
-st.set_page_config(page_title="My cool app")
+st.set_page_config(page_title="Burnout Predictor 🔥", page_icon="🔥")
 
 mental_health = st.selectbox("Mental Health Status", ["Critical", "Needs attention","Healthy"])
 mental_health = {"Critical": 0, "Needs attention": 1, "Healthy": 2}[mental_health]

@@ -7,6 +7,7 @@
 - [ ] Is branch updated with main?
 - [ ] Does code run without issues at runtime?
 - [ ] Are all code editor warnings fixed? *Ex. unused variables / imports*
+- [ ] Is command run: `pip freeze > requirements.txt`?
 
 ## Notes for reviewer
 ***Things you want the reviewer to know beforehand***

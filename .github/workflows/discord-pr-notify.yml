@@ -1,0 +1,27 @@
+name: Discord PR Review Notification
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_PR_WEBHOOK_URL }}
+          REVIEWER: ${{ github.event.review.user.login }}
+          STATE: ${{ github.event.review.state }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          BODY: ${{ github.event.review.body }}
+        run: |
+          PAYLOAD=$(jq -n \
+            --arg reviewer "$REVIEWER" \
+            --arg state "$STATE" \
+            --arg title "$PR_TITLE" \
+            --arg url "$PR_URL" \
+            --arg body "$BODY" \
+            '{content: "**\($reviewer)** \($state) PR: **\($title)**\n\($body)\n\($url)"}')
+          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_PR_WEBHOOK_URL"

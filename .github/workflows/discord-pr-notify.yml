@@ -24,4 +24,4 @@ jobs:
             --arg url "$PR_URL" \
             --arg body "$BODY" \
             '{content: "**\($reviewer)** \($state) PR: **\($title)**\n\($body)\n\($url)"}')
-          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_PR_WEBHOOK_URL"
+          curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"

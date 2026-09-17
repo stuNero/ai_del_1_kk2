@@ -1,0 +1,21 @@
+name: Discord PR Opened Notification
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      
+name: Send Discord notification
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_PR_WEBHOOK_URL }}
+        AUTHOR: ${{ github.event.pull_request.user.login }}
+        PR_TITLE: ${{ github.event.pull_request.title }}
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        BODY: ${{ github.event.pull_request.body }}
+      run: |
+        PAYLOAD=$(jq -n \--arg author "$AUTHOR" \--arg title "$PR_TITLE" \--arg url "$PR_URL" \--arg body "$BODY" \'{content: "($author) opened a PR: ($title)\n($body)\n($url)"}')
+        curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"

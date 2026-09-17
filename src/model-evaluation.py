@@ -10,7 +10,6 @@ from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import cross_validate
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
-
 from sklearn.metrics import mean_squared_error
 
 import joblib
@@ -21,6 +20,9 @@ import numpy as np
 
 import time
 import sys
+import warnings
+
+warnings.filterwarnings("ignore")
 
 sys.path.insert(0, "../src")
 from loaders.load_data import load_from_db

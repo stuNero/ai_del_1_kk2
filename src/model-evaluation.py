@@ -22,7 +22,7 @@ import numpy as np
 import time
 import sys
 sys.path.insert(0, "../src")
-from loaders.load_data import load_from_db, save_to_db
+from loaders.load_data import load_from_db
 
 
 # ______________________________________________________________________

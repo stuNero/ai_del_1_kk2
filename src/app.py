@@ -1,4 +1,9 @@
 import streamlit as st
+from api import fetch_model
+
+
+regression_model = fetch_model(model_type="regression")
+
 st.set_page_config(page_title="Burnout Predictor 🔥", page_icon="🔥")
 
 mental_health = st.selectbox("Mental Health Status", ["Critical", "Needs attention","Healthy"])
@@ -35,3 +40,7 @@ data = [
     chronic_stress[0],
     chronic_stress[1]
     ]
+
+if st.button("Predict"):
+    prediction = regression_model.predict([data])
+    st.write(prediction[0])

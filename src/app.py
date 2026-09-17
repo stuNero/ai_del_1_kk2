@@ -1,37 +1,78 @@
 import streamlit as st
+from api import fetch_model
+
+
+regression_model = fetch_model(model_type="regression")
+
 st.set_page_config(page_title="Burnout Predictor 🔥", page_icon="🔥")
 
-mental_health = st.selectbox("Mental Health Status", ["Critical", "Needs attention","Healthy"])
-mental_health = {"Critical": 0, "Needs attention": 1, "Healthy": 2}[mental_health]
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-image: url("https://media.licdn.com/dms/image/v2/D4E22AQH7p1CnOwEabg/feedshare-shrink_800/B4EZsKnzSsHcAg-/0/1765411773608?e=2147483647&v=beta&t=K0gdWtPo8xM6-neDxU2rBGx187LEoGCeTWvKpj29glU");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+data = None
+with st.container():
+    st.markdown(
+        """
+        <style>
+        div[data-testid="stVerticalBlock"]:has(div.marker) {
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        </style>
+        <div class="marker"></div>
+        """,
+        unsafe_allow_html=True
+    )
+    st.title("Burnout Predictor 🔥")
+    st.markdown("This app predicts your burnout status based on your mental health status, stress level, and chronic stress.")
+    st.markdown("Please fill out the form below to get started.")
 
-stress_level = st.selectbox("Stress Level Last 14 Days", ["High", "Moderate","Low"])
-stress_level = {"High": 0, "Moderate": 1, "Low": 2}[stress_level]
+    mental_health = st.selectbox("Mental Health Status", ["Critical", "Needs attention","Healthy"])
+    mental_health = {"Critical": 0, "Needs attention": 1, "Healthy": 2}[mental_health]
 
-chronic_stress = st.selectbox("Chronic Stress", ["No", "Yes"])
-chronic_stress = {"No": [1, 0], "Yes": [0, 1]}[chronic_stress]
+    stress_level = st.selectbox("Stress Level Last 14 Days", ["High", "Moderate","Low"])
+    stress_level = {"High": 0, "Moderate": 1, "Low": 2}[stress_level]
 
-sleep_quality = st.selectbox("Sleep Quality Last 14 Days", ["Poor", "Average", "Good", "Excellent"])
-sleep_quality = {"Poor": 0, "Average": 1, "Good": 2, "Excellent": 3}[sleep_quality]
+    chronic_stress = st.selectbox("Chronic Stress", ["No", "Yes"])
+    chronic_stress = {"No": [1, 0], "Yes": [0, 1]}[chronic_stress]
 
-work_hours_per_week = st.number_input("Work Hours Per Week", min_value=0, max_value=85, value=0, step=1)
+    sleep_quality = st.selectbox("Sleep Quality Last 14 Days", ["Poor", "Average", "Good", "Excellent"])
+    sleep_quality = {"Poor": 0, "Average": 1, "Good": 2, "Excellent": 3}[sleep_quality]
 
-screen_time_hours = st.number_input("Screen Time Hours Per Day", min_value=0, max_value=18, value=0, step=1)
+    work_hours_per_week = st.number_input("Work Hours Per Week", min_value=0, max_value=85, value=0, step=1)
 
-meditation_minutes = st.number_input("Meditation Minutes Per Day", min_value=0, max_value=240, value=0, step=1)
+    screen_time_hours = st.number_input("Screen Time Hours Per Day", min_value=0, max_value=18, value=0, step=1)
 
-sleep_hours = st.number_input("Sleep Hours Per Night", min_value=2, max_value=12, value=2, step=1)
+    meditation_minutes = st.number_input("Meditation Minutes Per Day", min_value=0, max_value=240, value=0, step=1)
 
-physical_activity_hours = st.number_input("Physical Activity Hours Per Week", min_value=0, max_value=13, value=0, step=1)
+    sleep_hours = st.number_input("Sleep Hours Per Night", min_value=2, max_value=12, value=2, step=1)
 
-data = [
-    mental_health,
-    stress_level,
-    work_hours_per_week,
-    screen_time_hours,
-    meditation_minutes,
-    sleep_hours,
-    sleep_quality, 
-    physical_activity_hours,
-    chronic_stress[0],
-    chronic_stress[1]
-    ]
+    physical_activity_hours = st.number_input("Physical Activity Hours Per Week", min_value=0, max_value=13, value=0, step=1)
+    data = [
+        mental_health,
+        stress_level,
+        work_hours_per_week,
+        screen_time_hours,
+        meditation_minutes,
+        sleep_hours,
+        sleep_quality, 
+        physical_activity_hours,
+        chronic_stress[0],
+        chronic_stress[1]
+        ]
+
+
+if st.button("Predict"):
+    prediction = regression_model.predict([data])
+    st.write(prediction[0])

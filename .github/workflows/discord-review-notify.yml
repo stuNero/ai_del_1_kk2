@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Send Discord notification
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_PR_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_REVIEW_WEBHOOK_URL }}
           REVIEWER: ${{ github.event.review.user.login }}
           STATE: ${{ github.event.review.state }}
           PR_TITLE: ${{ github.event.pull_request.title }}

@@ -2,7 +2,6 @@ from pathlib import Path
 import subprocess
 import sys
 import sqlite3
-from src.loaders.load_data import load_from_db
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 LOADERS_DIR = PROJECT_ROOT / "src" / "loaders"

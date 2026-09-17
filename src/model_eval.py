@@ -3,29 +3,21 @@ from sklearn.linear_model import LassoLars, LinearRegression, ElasticNet
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import GridSearchCV, train_test_split, cross_validate
 
-from sklearn.model_selection import cross_validate
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 
-import joblib
-import sqlite3
-import io
+import joblib, sqlite3, io, time, sys, warnings
 import pandas as pd
 import numpy as np
-
-import time
-import sys
-import warnings
 
 warnings.filterwarnings("ignore")
 
 sys.path.insert(0, "../src")
 from loaders.load_data import load_from_db
+from paths import DB_PATH
 
 MODEL_NAME = "regression_model"
 
@@ -156,7 +148,7 @@ def evaluate_models(trained_models, X_test, y_test):
     return results_df
 
 
-def save_best_model_to_db(best_model, model_name, db_path="../db/burnout_database.db"):
+def save_best_model_to_db(best_model, model_name, db_path=DB_PATH):
     """Save best model to database."""
 
     conn = sqlite3.connect(db_path)

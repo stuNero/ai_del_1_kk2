@@ -49,6 +49,6 @@ if clean_table_exists[0] != 1:
     run_step([sys.executable, "clean_data.py"], LOADERS_DIR)
 
 if model_table_exists[0] != 1:
-    run_step([sys.executable, "model-evaluation.py"], SRC_DIR)
+    run_step([sys.executable, "model_eval.py"], SRC_DIR)
 
 run_step([sys.executable, "-m", "streamlit", "run", "app.py","--server.headless", "true"], SRC_DIR)

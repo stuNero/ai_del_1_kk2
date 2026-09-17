@@ -1,8 +1,11 @@
 import pandas as pd
 import sqlite3
+import sys
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent.parent.parent / "db" / "burnout_database.db"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from paths import DB_PATH
+
 DB_PATH.parent.mkdir(exist_ok=True)
 
 

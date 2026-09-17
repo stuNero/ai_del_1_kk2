@@ -4,3 +4,12 @@ __pycache__/
 db/
 data/
 .DS_Store
+
+# obsidian and notes
+.obsidian/
+obsidian_notes/
+notes.md
+
+# copilot skills and instructions
+.github/skills/
+.github/copilot-instructions.md

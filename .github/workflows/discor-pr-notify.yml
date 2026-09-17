@@ -14,12 +14,10 @@ jobs:
           AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-          BODY: ${{ github.event.pull_request.body }}
         run: |
           PAYLOAD=$(jq -n \
             --arg author "$AUTHOR" \
             --arg title "$PR_TITLE" \
             --arg url "$PR_URL" \
-            --arg body "$BODY" \
-            '{content: "\($author) opened a PR: \($title)\n\($body)\n\($url)"}')
+            '{content: "\($author) opened a PR: \($title)\n\($url)"}')
           curl -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"

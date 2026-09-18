@@ -2,6 +2,11 @@
 
 ## How to run
 
+### IMPORTANT
+Before running the app, download the `.csv` data from [kaggle](https://www.kaggle.com/datasets/mobeenfatimah/mental-health-and-burnout-prediction-dataset).
+**The app is unusuable without this.**
+
+### Instructions
 From the project root, install the dependencies:
 
 ```bash

@@ -26,7 +26,7 @@ def fetch_model(model_type: str, db_path: str | Path = DEFAULT_DB_PATH) -> Pipel
         with sqlite3.connect(db_path) as conn:
             
             cursor = conn.cursor()
-            cursor.execute("SELECT model FROM models WHERE name = ?",(f"{model_type}_model",))
+            cursor.execute("SELECT model FROM models WHERE type = ?",(f"{model_type}_model",))
             row = cursor.fetchone()
             
             if row is None:

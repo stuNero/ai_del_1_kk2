@@ -36,3 +36,17 @@ REG_FEATURE_COLUMNS = [
 ]
 
 REG_TARGET_COLUMN = "Burnout_Score"
+
+REG_ORDINAL_COLUMNS = [
+    {"name":"Mental_Health_Status", "values":["Critical", "Needs Attention", "Healthy"]},
+    {"name":"Stress_Level", "values":["High", "Moderate", "Low"]},
+    {"name":"Sleep_Quality", "values":["Poor", "Average", "Good", "Excellent"]},
+]
+
+REG_NOMINAL_COLUMNS = ["Chronic_Stress"]
+
+REG_CLEAN_TABLE_NAME = "burnout_data_clean"
+
+REG_RAW_TABLE_NAME = "burnout_data"
+
+REG_MODEL_TYPE = "regression_model"

@@ -1,16 +1,11 @@
-import sys
 from pathlib import Path
 from typing import List
 
 import pandas as pd
 from sklearn.preprocessing import OrdinalEncoder
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
 from src.config.constants import REG_RAW_COLUMNS
-from loaders.load_data import load_from_db, save_to_db
+from src.loaders.load_data import load_from_db, save_to_db
 
 def reg_ordinal_encode(data: pd.DataFrame, column: str, values: List[str]) -> pd.DataFrame:
     """

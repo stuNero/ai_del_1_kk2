@@ -7,8 +7,6 @@ from src.config.paths import (
     APP_PATH,
     DATA_PATH,
     DB_PATH,
-    LOADERS_DIR,
-    MODELS_DIR,
     PROJECT_ROOT,
 )
 
@@ -29,7 +27,7 @@ clean_table_exists = None
 model_table_exists = None
 
 if not DB_PATH.exists():
-    run_step([sys.executable, str(LOADERS_DIR / "load_data.py")], PROJECT_ROOT)
+    run_step([sys.executable, "-m", "src.loaders.load_data"], PROJECT_ROOT)
 
 # Check if 'burnout_data' & 'models' tables exist in DB
 with sqlite3.connect(DB_PATH) as conn:
@@ -55,9 +53,9 @@ with sqlite3.connect(DB_PATH) as conn:
     model_table_exists = cursor.fetchone()
 
 if clean_table_exists[0] != 1:
-    run_step([sys.executable, str(LOADERS_DIR / "clean_data.py")], PROJECT_ROOT)
+    run_step([sys.executable, "-m", "src.loaders.clean_data"], PROJECT_ROOT)
 
 if model_table_exists[0] != 1:
-    run_step([sys.executable, str(MODELS_DIR / "model_eval.py")], PROJECT_ROOT)
+    run_step([sys.executable, "-m", "src.models.model_eval"], PROJECT_ROOT)
 
 run_step([sys.executable, "-m", "streamlit", "run", str(APP_PATH), "--server.headless", "true"], PROJECT_ROOT)

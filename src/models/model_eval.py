@@ -1,7 +1,6 @@
 # Imports
 import io
 import sqlite3
-import sys
 import time
 import warnings
 from pathlib import Path
@@ -19,12 +18,8 @@ from sklearn.tree import DecisionTreeRegressor
 
 warnings.filterwarnings("ignore")
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
 from src.config.paths import DB_PATH
-from loaders.load_data import load_from_db
+from src.loaders.load_data import load_from_db
 
 MODEL_NAME = "regression_model"
 

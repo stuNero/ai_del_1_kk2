@@ -1,42 +1,67 @@
-import pandas as pd
 import sys
+from pathlib import Path
+from typing import List
 
+import pandas as pd
 from sklearn.preprocessing import OrdinalEncoder
-sys.path.insert(0, "../src")
 
-from load_data import load_from_db, save_to_db
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-data = load_from_db()
+from src.config.constants import REG_RAW_COLUMNS
+from loaders.load_data import load_from_db, save_to_db
 
-columns = [
-    "Mental_Health_Status",
-    "Stress_Level",
-    "Chronic_Stress",
-    "Work_Hours_Per_Week",
-    "Screen_Time_Hours",
-    "Meditation_Minutes",
-    "Sleep_Hours",
-    "Sleep_Quality",
-    "Physical_Activity_Hours",
-    "Burnout_Score"
-]
+def reg_ordinal_encode(data: pd.DataFrame, column: str, values: List[str]) -> pd.DataFrame:
+    """
+    Args:
+        `data`: The **dataframe** of which a **column** will be encoded.
+            Type `pd.DataFrame`
+        `column`: The **column** to be encoded.
+            Type `str`.
+        `values`: The ordinal string **values** to encode, in order of importance from most important to least. \n
+            Example: `["High", "Medium", "Low"]` -> `[0,1,2]` \n
+            Type `List[str]`.
+    Returns:
+        A new, encoded **dataframe** (the original `data` is not modified).
+    Raises:
+        `TypeError`: If `values` is `None` or not a list, or has fewer than two elements.
+        `TypeError`: If `data` is `None` or not a pandas DataFrame.
+        `TypeError`: If `column` is `None` or not a string.
+        `KeyError`: If `column` is not found in the dataframe.
+        `ValueError`: If `column` in the dataframe has no rows.
+    """
+    if not isinstance(values, list):
+        raise TypeError("The `values` parameter must be a list")
+    if len(values) < 2:
+        raise TypeError("The `values` parameter must be a list of at least two elements")
 
-data = data[columns]
+    if not isinstance(data, pd.DataFrame):
+        raise TypeError("The `data` parameter must be a pandas DataFrame `pd.DataFrame`")
 
-data = data.dropna()
+    if not isinstance(column, str):
+        raise TypeError("The `column` parameter must be a string `str`")
+    if column not in data.columns:
+        raise KeyError(f"'{column}' is not a column in the `data` dataframe")
 
-stress_lvl_encoder = OrdinalEncoder(categories=[["High", "Moderate", "Low"]])
+    if data[[column]].empty:
+        raise ValueError(f"Column `{column}` in the dataframe has no rows")
 
-mental_health_status_encoder = OrdinalEncoder(categories=[["Critical", "Needs Attention", "Healthy"]])
+    data = data.copy()
+    encoder = OrdinalEncoder(categories=[values])
+    data[column] = encoder.fit_transform(data[[column]])
+    return data
 
-sleep_quality_encoder = OrdinalEncoder(categories=[["Poor", "Average", "Good", "Excellent"]])
 
-data["Stress_Level"] = stress_lvl_encoder.fit_transform(data[["Stress_Level"]])
+if __name__ == "__main__":
+    data = load_from_db()
+    data = data[REG_RAW_COLUMNS]
+    data = data.dropna()
 
-data["Mental_Health_Status"] = mental_health_status_encoder.fit_transform(data[["Mental_Health_Status"]])
+    data = reg_ordinal_encode(data=data, column="Stress_Level", values=["High", "Moderate", "Low"])
+    data = reg_ordinal_encode(data=data, column="Mental_Health_Status", values=["Critical", "Needs Attention", "Healthy"])
+    data = reg_ordinal_encode(data=data, column="Sleep_Quality", values=["Poor", "Average", "Good", "Excellent"])
 
-data["Sleep_Quality"] = sleep_quality_encoder.fit_transform(data[["Sleep_Quality"]])
+    data = pd.get_dummies(data, columns=["Chronic_Stress"])
 
-data = pd.get_dummies(data, columns=["Chronic_Stress"])
-
-save_to_db(data, table_name="burnout_data_clean")
+    save_to_db(data, table_name="burnout_data_clean")

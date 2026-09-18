@@ -1,8 +1,5 @@
 from typing import Any, Mapping
-
-import numpy as np
 import pandas as pd
-
 from src.config.constants import REG_FEATURE_COLUMNS
 
 def reg_prepare_features(raw_input: Mapping[str, Any]) -> pd.DataFrame:

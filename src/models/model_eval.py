@@ -3,7 +3,6 @@ import io
 import sqlite3
 import time
 import warnings
-from pathlib import Path
 
 import joblib
 import numpy as np

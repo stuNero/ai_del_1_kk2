@@ -1,6 +1,14 @@
+import sys
+from pathlib import Path
+
 import streamlit as st
-from api import load_regression_model
-from reg_prediction import reg_predict
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.api.model_api import load_regression_model
+from src.models.reg_prediction import reg_predict
 
 def run_app():
     st.set_page_config(

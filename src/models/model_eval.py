@@ -1,23 +1,30 @@
 # Imports
-from sklearn.linear_model import LassoLars, LinearRegression, ElasticNet
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
+import io
+import sqlite3
+import sys
+import time
+import warnings
+from pathlib import Path
 
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from sklearn.pipeline import make_pipeline
-from sklearn.model_selection import GridSearchCV, train_test_split, cross_validate
-
-from sklearn.metrics import mean_squared_error
-
-import joblib, sqlite3, io, time, sys, warnings
-import pandas as pd
+import joblib
 import numpy as np
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import ElasticNet, LassoLars, LinearRegression
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import GridSearchCV, cross_validate, train_test_split
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.tree import DecisionTreeRegressor
 
 warnings.filterwarnings("ignore")
 
-sys.path.insert(0, "../src")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.config.paths import DB_PATH
 from loaders.load_data import load_from_db
-from paths import DB_PATH
 
 MODEL_NAME = "regression_model"
 

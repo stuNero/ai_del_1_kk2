@@ -56,6 +56,6 @@ if clean_table_exists[0] != 1:
     run_step([sys.executable, "-m", "src.loaders.clean_data"], PROJECT_ROOT)
 
 if model_table_exists[0] != 1:
-    run_step([sys.executable, "-m", "src.models.model_eval"], PROJECT_ROOT)
+    run_step([sys.executable, "-m", "src.models.reg_model_eval"], PROJECT_ROOT)
 
 run_step([sys.executable, "-m", "streamlit", "run", str(APP_PATH), "--server.headless", "true"], PROJECT_ROOT)

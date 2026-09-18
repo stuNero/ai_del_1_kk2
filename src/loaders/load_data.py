@@ -26,7 +26,7 @@ def save_to_db(df, db_file=DB_PATH, table_name=REG_RAW_TABLE_NAME):
     db_filename = str(db_file).split("\\")
     
     db_exist = True
-    db_created_msg = f"Database {db_filename[-1]} created!"
+    db_created_msg = f"Database [{db_filename[-1]}] created!"
     
     if not DB_PATH.exists():
         db_exist = False

@@ -3,13 +3,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-from src.config.paths import DATA_PATH
-
-PROJECT_ROOT = Path(__file__).resolve().parent
-LOADERS_DIR = PROJECT_ROOT / "src" / "data" / "loaders"
-MODELS_DIR = PROJECT_ROOT / "src" / "models"
-APP_PATH = PROJECT_ROOT / "src" / "app" / "app.py"
-DB_DIR = PROJECT_ROOT / "db"
+from src.config.paths import (
+    APP_PATH,
+    DATA_PATH,
+    DB_PATH,
+    LOADERS_DIR,
+    MODELS_DIR,
+    PROJECT_ROOT,
+)
 
 
 def run_step(command: list[str], working_directory: Path) -> None:
@@ -24,16 +25,14 @@ if not DATA_PATH.exists():
 
 
 # Check if database exist, and if not, executes load_data.py
-file = Path(DB_DIR, "burnout_database.db")
-
 clean_table_exists = None
 model_table_exists = None
 
-if not file.exists():
+if not DB_PATH.exists():
     run_step([sys.executable, str(LOADERS_DIR / "load_data.py")], PROJECT_ROOT)
 
 # Check if 'burnout_data' & 'models' tables exist in DB
-with sqlite3.connect(file) as conn:
+with sqlite3.connect(DB_PATH) as conn:
     cursor = conn.cursor()
     cursor.execute(
         """

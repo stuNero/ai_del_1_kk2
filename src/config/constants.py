@@ -50,3 +50,5 @@ REG_CLEAN_TABLE_NAME = "burnout_data_clean"
 REG_RAW_TABLE_NAME = "burnout_data"
 
 REG_MODEL_TYPE = "regression_model"
+
+RANDOM_STATE = 1337

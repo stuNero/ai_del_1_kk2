@@ -1,9 +1,10 @@
 # Imports
 import io, sqlite3, time, warnings, joblib
 
-from typing import Tuple
+from typing import Tuple, Dict, List, Any
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor
@@ -17,7 +18,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from src.config.paths import DB_PATH
 from src.loaders.load_data import load_from_db
 
-from src.config.constants import REG_CLEAN_TABLE_NAME, REG_TARGET_COLUMN, REG_MODEL_TYPE
+from src.config.constants import REG_CLEAN_TABLE_NAME, REG_TARGET_COLUMN, REG_MODEL_TYPE, RANDOM_STATE
 
 warnings.filterwarnings("ignore")
 
@@ -31,13 +32,13 @@ def load_and_split_data(table_name: str, target:str=REG_TARGET_COLUMN) -> Tuple[
     
     return X, y
 
-def split_train_test(X: pd.DataFrame, y: pd.Series, test_size:float=0.2) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+def split_train_test(X: pd.DataFrame,  y: pd.Series, test_size:float=0.2) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     """Split data into train/test."""
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=RANDOM_STATE)
     return X_train, X_test, y_train, y_test
 
-def train_models(X_train, y_train):
+def train_models(X_train :pd.DataFrame, y_train:pd.Series) -> List[Dict[str, Any]]:
     """Train all models and return results."""
 
     models_to_train = {
@@ -54,7 +55,7 @@ def train_models(X_train, y_train):
         },
         "DecisionTreeRegressor": {
             "pipe": make_pipeline(
-                StandardScaler(), DecisionTreeRegressor(random_state=1337)
+                StandardScaler(), DecisionTreeRegressor(random_state=RANDOM_STATE)
             ),
             "params": {
                 "decisiontreeregressor__max_depth": [None, 10, 20],
@@ -63,7 +64,7 @@ def train_models(X_train, y_train):
         },
         "RandomForestRegressor": {
             "pipe": make_pipeline(
-                StandardScaler(), RandomForestRegressor(random_state=1337)
+                StandardScaler(), RandomForestRegressor(random_state=RANDOM_STATE)
             ),
             "params": {
                 "randomforestregressor__n_estimators": [10, 50, 100],
@@ -114,7 +115,7 @@ def train_models(X_train, y_train):
 
     return trained_models
 
-def evaluate_models(trained_models, X_test, y_test):
+def evaluate_models(trained_models:List[Dict[str, Any]], X_test:pd.DataFrame, y_test:pd.Series) -> pd.DataFrame:
     """Evaluate all models and rank by efficiency."""
 
     results = []
@@ -166,7 +167,7 @@ def get_best_model(data:pd.DataFrame) -> Pipeline:
 def final_model_train(model:Pipeline, X:pd.DataFrame, y:pd.Series) -> Pipeline:
     return model.fit(X, y)
 
-def save_best_model_to_db(best_model, model_type, db_path=DB_PATH):
+def save_best_model_to_db(best_model:Pipeline, model_type:str, db_path:Path=DB_PATH):
     """Save best model to database."""
 
     conn = sqlite3.connect(db_path)
@@ -216,7 +217,7 @@ def run_pipeline():
     best_model = final_model_train(best_model, X, y)
 
     # Save
-    save_best_model_to_db(best_model, REG_MODEL_TYPE)
+    save_best_model_to_db(best_model=best_model, model_type=REG_MODEL_TYPE)
 
 if __name__ == "__main__":
     run_pipeline()

@@ -1,9 +1,15 @@
 import sqlite3
 import joblib
 import io
+from pathlib import Path
 from sklearn.pipeline import Pipeline
 
-def fetch_model(model_type: str) -> Pipeline:
+from src.config.paths import DB_PATH
+
+DEFAULT_DB_PATH = DB_PATH
+
+
+def fetch_model(model_type: str, db_path: str | Path = DEFAULT_DB_PATH) -> Pipeline:
     """loads the model from the database and returns it
     Args: 
         model_type: The type of the model to retrieve. Valid values: 
@@ -17,10 +23,10 @@ def fetch_model(model_type: str) -> Pipeline:
     if (model_type.lower() not in ("regression","classification")):
         raise ValueError("Invalid model type")
     try:
-        with sqlite3.connect("../db/burnout_database.db") as conn:
+        with sqlite3.connect(db_path) as conn:
             
             cursor = conn.cursor()
-            cursor.execute("SELECT model FROM models WHERE name = ?",(f"{model_type}_model",))
+            cursor.execute("SELECT model FROM models WHERE type = ?",(f"{model_type}_model",))
             row = cursor.fetchone()
             
             if row is None:
@@ -29,3 +35,6 @@ def fetch_model(model_type: str) -> Pipeline:
             return joblib.load(io.BytesIO(row[0]))
     except sqlite3.Error as e:
         raise ConnectionError("Failed to connect to the database") from e
+
+def load_regression_model(db_path: str | Path = DEFAULT_DB_PATH) -> Pipeline:
+    return fetch_model(model_type="regression", db_path=db_path)

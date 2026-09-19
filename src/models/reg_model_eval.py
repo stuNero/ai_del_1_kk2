@@ -1,47 +1,44 @@
 # Imports
-from sklearn.linear_model import LassoLars, LinearRegression, ElasticNet
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
+import io, sqlite3, time, warnings, joblib
 
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import make_pipeline
-
-from sklearn.model_selection import cross_validate
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
-
-import joblib
-import sqlite3
-import io
-import pandas as pd
+from typing import Tuple, Dict, List, Any
 import numpy as np
+import pandas as pd
+from pathlib import Path
 
-import time
-import sys
-import warnings
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.linear_model import ElasticNet, LassoLars, LinearRegression
+
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import GridSearchCV, cross_validate, train_test_split
+from sklearn.pipeline import make_pipeline, Pipeline
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
+from src.config.paths import DB_PATH
+from src.loaders.load_data import load_from_db
+
+from src.config.constants import REG_CLEAN_TABLE_NAME, REG_TARGET_COLUMN, REG_MODEL_TYPE, RANDOM_STATE
 
 warnings.filterwarnings("ignore")
 
-sys.path.insert(0, "../src")
-from loaders.load_data import load_from_db
 
-MODEL_NAME = "regression_model"
-
-
-def load_and_split_data(table_name: str, test_size=0.2):
-    """Load data from database and split into train/test."""
+def load_and_split_data(table_name: str, target:str=REG_TARGET_COLUMN) -> Tuple[pd.DataFrame, pd.Series]:
+    """Load data from database and split into X and y"""
 
     df = load_from_db(table_name=table_name)
-    y = df["Burnout_Score"]
-    X = df.drop(columns="Burnout_Score")
+    y = df[target]
+    X = df.drop(columns=[target])
+    
+    return X, y
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
+def split_train_test(X: pd.DataFrame,  y: pd.Series, test_size:float=0.2) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+    """Split data into train/test."""
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=RANDOM_STATE)
     return X_train, X_test, y_train, y_test
 
-
-def train_models(X_train, y_train):
+def train_models(X_train :pd.DataFrame, y_train:pd.Series) -> List[Dict[str, Any]]:
     """Train all models and return results."""
 
     models_to_train = {
@@ -58,7 +55,7 @@ def train_models(X_train, y_train):
         },
         "DecisionTreeRegressor": {
             "pipe": make_pipeline(
-                StandardScaler(), DecisionTreeRegressor(random_state=1337)
+                StandardScaler(), DecisionTreeRegressor(random_state=RANDOM_STATE)
             ),
             "params": {
                 "decisiontreeregressor__max_depth": [None, 10, 20],
@@ -67,7 +64,7 @@ def train_models(X_train, y_train):
         },
         "RandomForestRegressor": {
             "pipe": make_pipeline(
-                StandardScaler(), RandomForestRegressor(random_state=1337)
+                StandardScaler(), RandomForestRegressor(random_state=RANDOM_STATE)
             ),
             "params": {
                 "randomforestregressor__n_estimators": [10, 50, 100],
@@ -118,8 +115,7 @@ def train_models(X_train, y_train):
 
     return trained_models
 
-
-def evaluate_models(trained_models, X_test, y_test):
+def evaluate_models(trained_models:List[Dict[str, Any]], X_test:pd.DataFrame, y_test:pd.Series) -> pd.DataFrame:
     """Evaluate all models and rank by efficiency."""
 
     results = []
@@ -155,8 +151,23 @@ def evaluate_models(trained_models, X_test, y_test):
 
     return results_df
 
+def get_best_model(data:pd.DataFrame) -> Pipeline:
+    """
+    Gets best model from a sorted model evaluated dataframe.
+    """
+    best_row = data.iloc[0]
+    best_model_obj = best_row["model"]
 
-def save_best_model_to_db(best_model, model_name, db_path="../db/burnout_database.db"):
+    return (
+        best_model_obj.best_estimator_
+        if hasattr(best_model_obj, "best_estimator_")
+        else best_model_obj
+    )
+
+def final_model_train(model:Pipeline, X:pd.DataFrame, y:pd.Series) -> Pipeline:
+    return model.fit(X, y)
+
+def save_best_model_to_db(best_model:Pipeline, model_type:str, db_path:Path=DB_PATH):
     """Save best model to database."""
 
     conn = sqlite3.connect(db_path)
@@ -166,6 +177,7 @@ def save_best_model_to_db(best_model, model_name, db_path="../db/burnout_databas
         CREATE TABLE IF NOT EXISTS models (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
+            type TEXT,
             model BLOB
         )
     """)
@@ -173,46 +185,39 @@ def save_best_model_to_db(best_model, model_name, db_path="../db/burnout_databas
     buffer = io.BytesIO()
     joblib.dump(best_model, buffer)
     model_bytes = buffer.getvalue()
-
+    
+    model_name = type(best_model.steps[-1][1]).__name__
+    model_type = model_type.lower()
+    
     cursor.execute(
-        "INSERT INTO models (name, model) VALUES (?,?)", (model_name, model_bytes)
+        "INSERT INTO models (name, type, model) VALUES (?,?,?)", (model_name, model_type, model_bytes)
     )
     conn.commit()
     conn.close()
 
-    print(f"Model saved: {model_name}")
+    print(f"Model saved: {model_name}, {model_type}")
 
-
-if __name__ == "__main__":
+def run_pipeline():
     # Load data
-    X_train, X_test, y_train, y_test = load_and_split_data(
-        table_name="burnout_data_clean"
-    )
+    X, y = load_and_split_data(table_name=REG_CLEAN_TABLE_NAME, target=REG_TARGET_COLUMN)
+    
+    # Split X and y in train and test
+    X_train, X_test, y_train, y_test = split_train_test(X, y)
 
     # Train models
     trained_models = train_models(X_train, y_train)
 
     # Evaluate
-    results_df = evaluate_models(trained_models, X_test, y_test)
+    eval_results_df = evaluate_models(trained_models, X_test, y_test)
 
     # Get best model
-    best_row = results_df.iloc[0]
-    best_model_obj = best_row["model"]
-    best_name = best_row["name"]
-    best_rmse = best_row["rmse"]
-
-    # Retrain on full data
-    best_model = (
-        best_model_obj.best_estimator_
-        if hasattr(best_model_obj, "best_estimator_")
-        else best_model_obj
-    )
+    best_model = get_best_model(eval_results_df)
 
     # Retrain best model on full dataset
-    df = load_from_db(table_name="burnout_data_clean")
-    y = df["Burnout_Score"]
-    X = df.drop(columns="Burnout_Score")
-    best_model.fit(X, y)
+    best_model = final_model_train(best_model, X, y)
 
     # Save
-    save_best_model_to_db(best_model, MODEL_NAME)
+    save_best_model_to_db(best_model=best_model, model_type=REG_MODEL_TYPE)
+
+if __name__ == "__main__":
+    run_pipeline()

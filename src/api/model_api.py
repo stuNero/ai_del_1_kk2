@@ -1,6 +1,7 @@
 import sqlite3
 import joblib
 import io
+from contextlib import closing
 from pathlib import Path
 from sklearn.pipeline import Pipeline
 
@@ -23,7 +24,7 @@ def fetch_model(model_type: str, db_path: str | Path = DEFAULT_DB_PATH) -> Pipel
     if (model_type.lower() not in ("regression","classification")):
         raise ValueError("Invalid model type")
     try:
-        with sqlite3.connect(db_path) as conn:
+        with closing(sqlite3.connect(db_path)) as conn:
             
             cursor = conn.cursor()
             cursor.execute("SELECT model FROM models WHERE type = ?",(f"{model_type}_model",))

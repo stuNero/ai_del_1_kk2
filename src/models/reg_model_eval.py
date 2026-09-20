@@ -199,7 +199,7 @@ def save_best_model_to_db(best_model:Pipeline, model_type:str, db_path:Path=DB_P
 
 def run_pipeline(db_path: Path=DB_PATH):
     # Load data
-    X, y = load_and_split_data(table_name=REG_CLEAN_TABLE_NAME, target=REG_TARGET_COLUMN, db_file=db_path)
+    X, y = load_and_split_data(table_name=REG_CLEAN_TABLE_NAME, target=REG_TARGET_COLUMN, db_path=db_path)
     
     # Split X and y in train and test
     X_train, X_test, y_train, y_test = split_train_test(X, y)

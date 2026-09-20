@@ -5,6 +5,7 @@ from typing import Tuple, Dict, List, Any
 import numpy as np
 import pandas as pd
 from pathlib import Path
+from contextlib import closing
 
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor
@@ -20,13 +21,13 @@ from src.loaders.load_data import load_from_db
 
 from src.config.constants import REG_CLEAN_TABLE_NAME, REG_TARGET_COLUMN, REG_MODEL_TYPE, RANDOM_STATE
 
-warnings.filterwarnings("ignore")
+# warnings.filterwarnings("ignore")
 
 
-def load_and_split_data(table_name: str, target:str=REG_TARGET_COLUMN) -> Tuple[pd.DataFrame, pd.Series]:
+def load_and_split_data(table_name: str, target:str=REG_TARGET_COLUMN, db_path: Path = DB_PATH) -> Tuple[pd.DataFrame, pd.Series]:
     """Load data from database and split into X and y"""
 
-    df = load_from_db(table_name=table_name)
+    df = load_from_db(table_name=table_name, db_path=db_path)
     y = df[target]
     X = df.drop(columns=[target])
     
@@ -170,36 +171,35 @@ def final_model_train(model:Pipeline, X:pd.DataFrame, y:pd.Series) -> Pipeline:
 def save_best_model_to_db(best_model:Pipeline, model_type:str, db_path:Path=DB_PATH):
     """Save best model to database."""
 
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS models (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            type TEXT,
-            model BLOB
-        )
-    """)
-
-    buffer = io.BytesIO()
-    joblib.dump(best_model, buffer)
-    model_bytes = buffer.getvalue()
-    
-    model_name = type(best_model.steps[-1][1]).__name__
-    model_type = model_type.lower()
-    
-    cursor.execute(
-        "INSERT INTO models (name, type, model) VALUES (?,?,?)", (model_name, model_type, model_bytes)
-    )
-    conn.commit()
-    conn.close()
-
+    try:
+        with closing(sqlite3.connect(db_path)) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS models (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT,
+                        type TEXT,
+                        model BLOB
+                    )
+                """)
+            buffer = io.BytesIO()
+            joblib.dump(best_model, buffer)
+            model_bytes = buffer.getvalue()
+            
+            model_name = type(best_model.steps[-1][1]).__name__
+            model_type = model_type.lower()
+            
+            cursor.execute(
+                "INSERT INTO models (name, type, model) VALUES (?,?,?)", (model_name, model_type, model_bytes)
+            )
+            conn.commit()
+    except Exception as e:
+        raise ConnectionError(f"Error saving model to database: {e}") from e
     print(f"Model saved: {model_name}, {model_type}")
 
-def run_pipeline():
+def run_pipeline(db_path: Path=DB_PATH):
     # Load data
-    X, y = load_and_split_data(table_name=REG_CLEAN_TABLE_NAME, target=REG_TARGET_COLUMN)
+    X, y = load_and_split_data(table_name=REG_CLEAN_TABLE_NAME, target=REG_TARGET_COLUMN, db_file=db_path)
     
     # Split X and y in train and test
     X_train, X_test, y_train, y_test = split_train_test(X, y)
@@ -217,7 +217,7 @@ def run_pipeline():
     best_model = final_model_train(best_model, X, y)
 
     # Save
-    save_best_model_to_db(best_model=best_model, model_type=REG_MODEL_TYPE)
+    save_best_model_to_db(best_model=best_model, model_type=REG_MODEL_TYPE, db_path=db_path)
 
 if __name__ == "__main__":
-    run_pipeline()
+    run_pipeline(db_path=DB_PATH)

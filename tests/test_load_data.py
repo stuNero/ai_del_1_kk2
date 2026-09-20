@@ -1,4 +1,4 @@
-import re
+import os
 import pytest
 import pandas as pd
 import sqlite3
@@ -11,65 +11,78 @@ from src.config.paths import DATA_PATH
 from src.config.constants import REG_RAW_TABLE_NAME
 
 # test
-def test_ensure_dataset_exists_returns_same_path():
-    result = ensure_dataset_exists(csv_path=DATA_PATH)
-    assert result == DATA_PATH
+class TestEnsureDatasetExists:
+    def test_returns_same_path(self):
+        result = ensure_dataset_exists(csv_path=DATA_PATH)
+        assert result == DATA_PATH
 
-def test_ensure_dataset_exists_raises_for_missing_file():
-    missing = Path("does_not_exist.csv")
-    with pytest.raises(FileNotFoundError):
-        ensure_dataset_exists(csv_path=missing)
+    def test_raises_for_missing_file(self):
+        missing = Path("does_not_exist.csv")
+        with pytest.raises(FileNotFoundError):
+            ensure_dataset_exists(csv_path=missing)
 
-def test_load_csv_returns_dataframe():
-    df = load_csv(csv_path=DATA_PATH)
-    assert type(df) == pd.DataFrame
+class TestLoadCsv:
+    def test_returns_dataframe(self):
+        df = load_csv(csv_path=DATA_PATH)
+        assert type(df) == pd.DataFrame
 
-def test_load_csv_raises_on_empty_dataframe(mocker):
-    mocker.patch("src.loaders.load_data.pd.read_csv", return_value=pd.DataFrame())
+    def test_raises_on_empty_dataframe(self,mocker):
+        mocker.patch("src.loaders.load_data.pd.read_csv", return_value=pd.DataFrame())
 
-    with pytest.raises(ValueError, match="Dataframe has no rows"):
-        load_csv(Path("fake.csv"))
+        with pytest.raises(ValueError, match="Dataframe has no rows"):
+            load_csv(Path("fake.csv"))
 
 class TestLoadFromDb:
-    def test_returns_df(self, tmp_path):
-        db_path = tmp_path / "test.db"
+    @pytest.fixture
+    def db_path(self, tmp_path):
+        return tmp_path / "fake.db"
+    
+    @pytest.fixture
+    def db_with_empty_table(self, db_path):
+        conn = sqlite3.connect(db_path)
+        conn.execute(f"CREATE TABLE {REG_RAW_TABLE_NAME} (id INTEGER, name TEXT)")
+        conn.commit()
+        conn.close()
+        return db_path
+    
+    @pytest.fixture
+    def db_with_filled_table(self, db_path):
         conn = sqlite3.connect(db_path)
         conn.execute(f"CREATE TABLE {REG_RAW_TABLE_NAME} (id INTEGER, name TEXT)")
         conn.execute(f"INSERT INTO {REG_RAW_TABLE_NAME} VALUES (1, 'a')")
         conn.commit()
         conn.close()
-
-        df = load_from_db(db_path=db_path)
+        return db_path
+    
+    def test_returns_df(self, db_with_filled_table):
+        df = load_from_db(db_path=db_with_filled_table)
         assert isinstance(df, pd.DataFrame)
         assert len(df) == 1
 
-    def test_raises_when_no_tables_exist(self, tmp_path):
-        db_path = tmp_path / "fake.db"
+    def test_raises_when_no_tables_exist(self, db_path):
         sqlite3.connect(db_path).close()
 
         with pytest.raises(ConnectionError, match="no such table"):
             load_from_db(db_path=db_path)
 
-    def test_raises_on_wrong_table_name(self, tmp_path):
-        db_path = tmp_path / "fake.db"
-        conn = sqlite3.connect(db_path)
-        conn.execute("CREATE TABLE some_other_table (id INTEGER)")
-        conn.commit()
-        conn.close()
-
+    def test_raises_on_wrong_table_name(self, db_with_filled_table):
         with pytest.raises(ConnectionError, match="no such table"):
-            load_from_db(db_path=db_path, table_name=REG_RAW_TABLE_NAME)
+            load_from_db(db_path=db_with_filled_table, table_name="nonexistent_table_name")
 
-    def test_raises_on_unwritable_path(self):
+    @pytest.mark.skipif(
+        hasattr(os, "geteuid") and os.geteuid() == 0,
+        reason="root bypasses filesystem permission checks",
+    )
+    def test_raises_on_unwritable_path(self, tmp_path):
+        restricted_dir = tmp_path / "restricted"
+        restricted_dir.mkdir()
+        restricted_dir.chmod(0o444)  # read-only, no write/execute
+
+        db_path = restricted_dir / "fake.db"
+
         with pytest.raises(ConnectionError):
-            load_from_db(db_path=Path("/nonexistent_dir_xyz/fake.db"))
+            load_from_db(db_path=db_path)
 
-    def test_returns_empty_df_when_table_has_no_rows(self, tmp_path):
-        db_path = tmp_path / "test.db"
-        conn = sqlite3.connect(db_path)
-        conn.execute(f"CREATE TABLE {REG_RAW_TABLE_NAME} (id INTEGER)")
-        conn.commit()
-        conn.close()
-
-        df = load_from_db(db_path=db_path)
+    def test_returns_empty_df_when_table_has_no_rows(self, db_with_empty_table):
+        df = load_from_db(db_path=db_with_empty_table)
         assert df.empty

@@ -23,6 +23,7 @@ if not DATA_PATH.exists():
 
 
 # Check if database exist, and if not, executes load_data.py
+raw_table_exists = None
 clean_table_exists = None
 model_table_exists = None
 
@@ -32,6 +33,17 @@ if not DB_PATH.exists():
 # Check if 'burnout_data' & 'models' tables exist in DB
 with sqlite3.connect(DB_PATH) as conn:
     cursor = conn.cursor()
+    
+    cursor.execute(
+        """
+            SELECT EXISTS (
+                SELECT 1 FROM sqlite_master
+                WHERE type='table' AND name='burnout_data'
+            );
+        """
+    )
+    raw_table_exists = cursor.fetchone()
+    
     cursor.execute(
         """
             SELECT EXISTS (
@@ -51,6 +63,9 @@ with sqlite3.connect(DB_PATH) as conn:
         """
     )
     model_table_exists = cursor.fetchone()
+
+if raw_table_exists[0] != 1:
+    run_step([sys.executable, "-m", "src.loaders.load_data"], PROJECT_ROOT)
 
 if clean_table_exists[0] != 1:
     run_step([sys.executable, "-m", "src.loaders.clean_data"], PROJECT_ROOT)

@@ -15,7 +15,7 @@ def ensure_dataset_exists(csv_path: Path = DATA_PATH) -> Path:
     return csv_path
 
 
-def load_from_db(db_path=DB_PATH, table_name=REG_RAW_TABLE_NAME) -> pd.DataFrame:
+def load_from_db(db_path:Path=DB_PATH, table_name:str=REG_RAW_TABLE_NAME) -> pd.DataFrame:
     try:
         with closing(sqlite3.connect(db_path)) as conn:
             df = pd.read_sql(f"SELECT * FROM {table_name}", conn)

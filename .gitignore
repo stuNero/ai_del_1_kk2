@@ -13,3 +13,8 @@ notes.md
 # copilot skills and instructions
 .github/skills/
 .github/copilot-instructions.md
+
+# Tests
+.pytest_cache/
+htmlcov/
+.coverage

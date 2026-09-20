@@ -7,23 +7,20 @@ from pathlib import Path
 from src.loaders.load_data import (ensure_dataset_exists, 
                                    load_csv,
                                    load_from_db)
-from src.config.paths import DATA_PATH
-from src.config.constants import REG_RAW_TABLE_NAME
 
 # test
 class TestEnsureDatasetExists:
-    def test_returns_same_path(self):
-        result = ensure_dataset_exists(csv_path=DATA_PATH)
-        assert result == DATA_PATH
+    def test_returns_same_path(self, existing_csv_file_with_row):
+        result = ensure_dataset_exists(csv_path=existing_csv_file_with_row)
+        assert result == existing_csv_file_with_row
 
-    def test_raises_for_missing_file(self):
-        missing = Path("does_not_exist.csv")
+    def test_raises_for_missing_file(self, csv_path):
         with pytest.raises(FileNotFoundError):
-            ensure_dataset_exists(csv_path=missing)
+            ensure_dataset_exists(csv_path=csv_path)
 
 class TestLoadCsv:
-    def test_returns_dataframe(self):
-        df = load_csv(csv_path=DATA_PATH)
+    def test_returns_dataframe(self, existing_csv_file_with_row):
+        df = load_csv(csv_path=existing_csv_file_with_row)
         assert type(df) == pd.DataFrame
 
     def test_raises_on_empty_dataframe(self,mocker):
@@ -33,27 +30,6 @@ class TestLoadCsv:
             load_csv(Path("fake.csv"))
 
 class TestLoadFromDb:
-    @pytest.fixture
-    def db_path(self, tmp_path):
-        return tmp_path / "fake.db"
-    
-    @pytest.fixture
-    def db_with_empty_table(self, db_path):
-        conn = sqlite3.connect(db_path)
-        conn.execute(f"CREATE TABLE {REG_RAW_TABLE_NAME} (id INTEGER, name TEXT)")
-        conn.commit()
-        conn.close()
-        return db_path
-    
-    @pytest.fixture
-    def db_with_filled_table(self, db_path):
-        conn = sqlite3.connect(db_path)
-        conn.execute(f"CREATE TABLE {REG_RAW_TABLE_NAME} (id INTEGER, name TEXT)")
-        conn.execute(f"INSERT INTO {REG_RAW_TABLE_NAME} VALUES (1, 'a')")
-        conn.commit()
-        conn.close()
-        return db_path
-    
     def test_returns_df(self, db_with_filled_table):
         df = load_from_db(db_path=db_with_filled_table)
         assert isinstance(df, pd.DataFrame)

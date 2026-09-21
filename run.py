@@ -1,54 +1,76 @@
-from pathlib import Path
+import sqlite3
 import subprocess
 import sys
-import sqlite3
+from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-LOADERS_DIR = PROJECT_ROOT / "src" / "loaders"
-SRC_DIR = PROJECT_ROOT / "src"
-DB_DIR = PROJECT_ROOT / "db"
+from src.config.paths import (
+    APP_PATH,
+    DATA_PATH,
+    DB_PATH,
+    PROJECT_ROOT,
+)
+
 
 def run_step(command: list[str], working_directory: Path) -> None:
     subprocess.run(command, cwd=working_directory, check=True)
 
 
+if not DATA_PATH.exists():
+    raise FileNotFoundError(
+        f"Dataset not found at {DATA_PATH}. "
+        "Download the CSV and place it in the project root data/ folder before running the app."
+    )
+
+
 # Check if database exist, and if not, executes load_data.py
-file = Path(DB_DIR, "burnout_database.db")
+raw_table_exists = None
+clean_table_exists = None
+model_table_exists = None
 
-clean_table_exists = None 
-model_table_exists = None 
-
-if not file.exists():
-    run_step([sys.executable, "load_data.py"], LOADERS_DIR)
+if not DB_PATH.exists():
+    run_step([sys.executable, "-m", "src.loaders.load_data"], PROJECT_ROOT)
 
 # Check if 'burnout_data' & 'models' tables exist in DB
-with sqlite3.connect(file) as conn:
+with sqlite3.connect(DB_PATH) as conn:
     cursor = conn.cursor()
+    
     cursor.execute(
         """
             SELECT EXISTS (
-                SELECT 1 FROM sqlite_master 
+                SELECT 1 FROM sqlite_master
+                WHERE type='table' AND name='burnout_data'
+            );
+        """
+    )
+    raw_table_exists = cursor.fetchone()
+    
+    cursor.execute(
+        """
+            SELECT EXISTS (
+                SELECT 1 FROM sqlite_master
                 WHERE type='table' AND name='burnout_data_clean'
-            );  
+            );
         """
-        )
+    )
     clean_table_exists = cursor.fetchone()
-    
+
     cursor.execute(
         """
             SELECT EXISTS (
-                SELECT 1 FROM sqlite_master 
+                SELECT 1 FROM sqlite_master
                 WHERE type='table' AND name='models'
-            );  
+            );
         """
-        )
-    
+    )
     model_table_exists = cursor.fetchone()
 
+if raw_table_exists[0] != 1:
+    run_step([sys.executable, "-m", "src.loaders.load_data"], PROJECT_ROOT)
+
 if clean_table_exists[0] != 1:
-    run_step([sys.executable, "clean_data.py"], LOADERS_DIR)
+    run_step([sys.executable, "-m", "src.loaders.clean_data"], PROJECT_ROOT)
 
 if model_table_exists[0] != 1:
-    run_step([sys.executable, "model-evaluation.py"], SRC_DIR)
+    run_step([sys.executable, "-m", "src.models.reg_model_eval"], PROJECT_ROOT)
 
-run_step([sys.executable, "-m", "streamlit", "run", "app.py","--server.headless", "true"], SRC_DIR)
+run_step([sys.executable, "-m", "streamlit", "run", str(APP_PATH), "--server.headless", "true"], PROJECT_ROOT)

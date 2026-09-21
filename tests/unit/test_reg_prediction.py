@@ -2,7 +2,7 @@ import pytest
 import re
 import pandas as pd
 
-from src.models.reg_prediction import reg_prepare_features, reg_predict
+from src.models.reg_prediction import reg_prepare_features, reg_predict, process_prediction
 
 from src.config.constants import REG_FEATURE_COLUMNS
 
@@ -70,3 +70,20 @@ class TestRegPredict:
 
         assert isinstance(features_passed, pd.DataFrame)
         assert features_passed.columns.to_list() == REG_FEATURE_COLUMNS
+
+class TestProcessPrediction:
+    
+    @pytest.mark.parametrize("value", [1, "1", None, [1]])    
+    def test_wrong_input_type_raises_error(self, value):
+        
+        with pytest.raises(TypeError):
+            process_prediction(value)
+
+    def test_returns_int(self):
+        assert isinstance(process_prediction(5.5), int)
+
+    def test_returns_zero_if_input_is_negative(self):
+        assert process_prediction(-0.1) == 0
+
+    def test_returns_hundred_if_input_is_over_hundred(self):
+        assert process_prediction(100.1) == 100

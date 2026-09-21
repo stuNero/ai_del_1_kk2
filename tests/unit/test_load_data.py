@@ -2,33 +2,22 @@ import os
 import pytest
 import pandas as pd
 import sqlite3
-from pathlib import Path
-
-from src.loaders.load_data import (ensure_dataset_exists, 
-                                   load_csv,
-                                   load_from_db,
-                                   save_to_db)
-
+import requests
+import responses
+from src.loaders.load_data import load_from_db, save_to_db, load_dataset
+from src.config.constants import KAGGLE_DATASET_URL
 # test
-class TestEnsureDatasetExists:
-    def test_returns_same_path(self, existing_csv_file_with_row):
-        result = ensure_dataset_exists(csv_path=existing_csv_file_with_row)
-        assert result == existing_csv_file_with_row
+class TestLoadDataset:
+    def test_returns_pd_dataframe(self):
+        assert isinstance(load_dataset(url=KAGGLE_DATASET_URL), pd.DataFrame)
+    
+    @responses.activate
+    def test_raises_httperror_if_faulty_url(self):
+        url = "https://example.com/data.csv"
+        responses.add(responses.GET, url, status=404)
 
-    def test_raises_for_missing_file(self, csv_path):
-        with pytest.raises(FileNotFoundError):
-            ensure_dataset_exists(csv_path=csv_path)
-
-class TestLoadCsv:
-    def test_returns_dataframe(self, existing_csv_file_with_row):
-        df = load_csv(csv_path=existing_csv_file_with_row)
-        assert type(df) == pd.DataFrame
-
-    def test_raises_on_empty_dataframe(self,mocker):
-        mocker.patch("src.loaders.load_data.pd.read_csv", return_value=pd.DataFrame())
-
-        with pytest.raises(ValueError, match="Dataframe has no rows"):
-            load_csv(Path("fake.csv"))
+        with pytest.raises(ConnectionError):
+            load_dataset(url)
 
 class TestLoadFromDb:
     def test_returns_df(self, db_with_filled_table):

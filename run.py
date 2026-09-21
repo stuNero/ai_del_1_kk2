@@ -6,26 +6,15 @@ from pathlib import Path
 from src.config.paths import (
     APP_PATH,
     ENDPOINTS_MODULE,
-    DATA_PATH,
     DB_PATH,
     PROJECT_ROOT,
 )
 
-
 def run_step(command: list[str], working_directory: Path) -> None:
     subprocess.run(command, cwd=working_directory, check=True)
 
-
 def start_process(command: list[str], working_directory: Path) -> subprocess.Popen:
     return subprocess.Popen(command, cwd=working_directory)
-
-
-if not DATA_PATH.exists():
-    raise FileNotFoundError(
-        f"Dataset not found at {DATA_PATH}. "
-        "Download the CSV and place it in the project root data/ folder before running the app."
-    )
-
 
 # Check if database exist, and if not, executes load_data.py
 raw_table_exists = None

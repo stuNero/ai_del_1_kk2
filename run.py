@@ -5,6 +5,7 @@ from pathlib import Path
 
 from src.config.paths import (
     APP_PATH,
+    ENDPOINTS_MODULE,
     DATA_PATH,
     DB_PATH,
     PROJECT_ROOT,
@@ -13,6 +14,10 @@ from src.config.paths import (
 
 def run_step(command: list[str], working_directory: Path) -> None:
     subprocess.run(command, cwd=working_directory, check=True)
+
+
+def start_process(command: list[str], working_directory: Path) -> subprocess.Popen:
+    return subprocess.Popen(command, cwd=working_directory)
 
 
 if not DATA_PATH.exists():
@@ -73,4 +78,10 @@ if clean_table_exists[0] != 1:
 if model_table_exists[0] != 1:
     run_step([sys.executable, "-m", "src.models.reg_model_eval"], PROJECT_ROOT)
 
-run_step([sys.executable, "-m", "streamlit", "run", str(APP_PATH), "--server.headless", "true"], PROJECT_ROOT)
+backend_process = start_process([sys.executable, "-m", "uvicorn", ENDPOINTS_MODULE, "--reload"], PROJECT_ROOT)
+
+try:
+    run_step([sys.executable, "-m", "streamlit", "run", str(APP_PATH), "--server.headless", "true", ], PROJECT_ROOT)
+finally:
+    backend_process.terminate()
+    backend_process.wait()

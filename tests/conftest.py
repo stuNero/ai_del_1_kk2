@@ -1,7 +1,20 @@
 import pytest
 import pandas as pd
 import sqlite3
-from src.config.constants import REG_RAW_TABLE_NAME
+from src.config.constants import REG_RAW_TABLE_NAME, REG_FEATURE_COLUMNS
+from unittest.mock import MagicMock
+
+@pytest.fixture
+def valid_raw_input():
+    # builds a raw_input dict with every key reg_prepare_features needs,
+    # using the real REG_FEATURE_COLUMNS so it stays in sync if that list changes
+    return {key: i for i, key in enumerate(REG_FEATURE_COLUMNS)}
+
+@pytest.fixture
+def mock_model():
+    model = MagicMock()
+    model.predict.return_value = [3.7]
+    return model
 
 @pytest.fixture
 def test_table_name():

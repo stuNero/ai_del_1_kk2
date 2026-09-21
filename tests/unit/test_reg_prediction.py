@@ -2,7 +2,7 @@ import pytest
 import re
 import pandas as pd
 
-from src.models.reg_prediction import reg_prepare_features
+from src.models.reg_prediction import reg_prepare_features, reg_predict
 
 from src.config.constants import REG_FEATURE_COLUMNS
 
@@ -34,3 +34,39 @@ class TestRegPrepareFeatures:
         assert "unused_key" not in df.columns.to_list()
         assert df.columns.to_list() == REG_FEATURE_COLUMNS
 
+class TestRegPredict:
+    def test_raises_typeerror_when_model_has_no_predict_attribute(self, valid_raw_input):
+        model_without_predict = object()
+
+        with pytest.raises(TypeError, match=re.escape("The `model` parameter must implement a callable `predict` method")):
+            reg_predict(model=model_without_predict, raw_input=valid_raw_input)
+
+    def test_raises_typeerror_when_model_predict_is_not_callable(self, valid_raw_input):
+        class FakeModel:
+            predict = "not callable"
+
+        with pytest.raises(TypeError, match=re.escape("The `model` parameter must implement a callable `predict` method")):
+            reg_predict(model=FakeModel(), raw_input=valid_raw_input)
+
+    def test_propagates_typeerror_when_raw_input_is_not_mapping(self, mock_model):
+        with pytest.raises(TypeError, match=re.escape("The `raw_input` parameter must be a `Mapping`")):
+            reg_predict(model=mock_model, raw_input=["a", "b"])
+
+    def test_propagates_keyerror_when_raw_input_missing_keys(self, mock_model):
+        with pytest.raises(KeyError, match=re.escape("`raw_input` is missing required keys:")):
+            reg_predict(model=mock_model, raw_input={})
+
+    def test_returns_rounded_prediction(self, mock_model, valid_raw_input):
+        result = reg_predict(model=mock_model, raw_input=valid_raw_input)
+
+        assert result == 4  # round(3.7, None) == 4
+        assert isinstance(result, int)
+
+    def test_calls_predict_with_prepared_features_dataframe(self, mock_model, valid_raw_input):
+        reg_predict(model=mock_model, raw_input=valid_raw_input)
+
+        called_args, _ = mock_model.predict.call_args
+        features_passed = called_args[0]
+
+        assert isinstance(features_passed, pd.DataFrame)
+        assert features_passed.columns.to_list() == REG_FEATURE_COLUMNS

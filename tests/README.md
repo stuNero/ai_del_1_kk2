@@ -18,6 +18,7 @@ Runs tests and reports coverage for `src`.
 ```bash
 pytest --cov=src --cov-report=term-missing
 ```
+*Omit init files by including* `--cov-config=pytest.ini`
 
 ### Multiple packages/paths
 ```bash

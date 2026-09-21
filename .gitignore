@@ -2,7 +2,6 @@
 __pycache__/
 *.pyc
 db/
-/data/
 .DS_Store
 
 # obsidian and notes

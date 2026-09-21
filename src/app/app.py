@@ -66,7 +66,7 @@ def run_app():
         physical_activity_hours = st.number_input("Physical Activity Hours Per Week", min_value=0, max_value=13, value=0, step=1)
 
     raw_input = {
-        "mental_health": mental_health,
+        "mental_health_status": mental_health,
         "stress_level": stress_level,
         "work_hours_per_week": work_hours_per_week,
         "screen_time_hours": screen_time_hours,

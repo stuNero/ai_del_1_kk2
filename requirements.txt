@@ -10,6 +10,7 @@ cloudpickle==3.1.2
 colorama==0.4.6
 comm==0.2.3
 contourpy==1.4.0
+coverage==7.16.1
 cycler==0.12.1
 debugpy==1.8.21
 executing==2.2.1
@@ -17,6 +18,7 @@ fonttools==4.65.0
 h11==0.16.0
 httptools==0.8.0
 idna==3.19
+iniconfig==2.3.0
 ipykernel==7.3.0
 ipython==9.17.1
 ipython_pygments_lexers==1.1.1
@@ -41,6 +43,7 @@ parso==0.8.7
 pexpect==4.9.0
 pillow==12.3.0
 platformdirs==4.11.8
+pluggy==1.6.0
 prompt_toolkit==3.0.53
 protobuf==7.36.1
 psutil==7.2.2
@@ -50,6 +53,9 @@ pyarrow==25.0.1
 pydeck==0.9.3
 Pygments==2.21.0
 pyparsing==3.3.2
+pytest==9.1.1
+pytest-cov==7.1.0
+pytest-mock==3.15.1
 python-dateutil==2.9.0.post0
 python-multipart==0.0.32
 pyzmq==27.2.0

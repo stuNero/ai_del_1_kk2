@@ -15,7 +15,7 @@ def ensure_dataset_exists(csv_path: Path = DATA_PATH) -> Path:
     return csv_path
 
 
-def load_from_db(db_path=DB_PATH, table_name=REG_RAW_TABLE_NAME) -> pd.DataFrame:
+def load_from_db(db_path:Path=DB_PATH, table_name:str=REG_RAW_TABLE_NAME) -> pd.DataFrame:
     try:
         with closing(sqlite3.connect(db_path)) as conn:
             df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
@@ -41,6 +41,8 @@ def save_to_db(df:pd.DataFrame, db_path:Path=DB_PATH, table_name:str=REG_RAW_TAB
 
 def load_csv(csv_path:Path=DATA_PATH) -> pd.DataFrame:
     df = pd.read_csv(csv_path)
+    if len(df) == 0:
+        raise ValueError(f"Dataframe has no rows")
     print(f"csv loaded with {len(df):,} rows")
     return df
 
@@ -53,4 +55,4 @@ def run_pipeline(csv_path:Path=DATA_PATH, db_path:Path=DB_PATH):
     save_to_db(df, db_path=db_path)
 
 if __name__ == "__main__":
-    run_pipeline()
+    run_pipeline(csv_path=DATA_PATH, db_path=DB_PATH)

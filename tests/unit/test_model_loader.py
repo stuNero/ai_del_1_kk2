@@ -23,7 +23,7 @@ class TestFetchModel:
 
 class TestLoadRegressionModel:
     def test_calls_fetch_model_with_regression_type(self):
-        with patch("src.api.model_api.fetch_model") as mock_fetch_model:
+        with patch("src.loaders.model_loader.fetch_model") as mock_fetch_model:
             mock_fetch_model.return_value = MagicMock(spec=Pipeline)
             
             result = load_regression_model(db_path="some/path.db")

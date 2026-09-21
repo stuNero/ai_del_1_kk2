@@ -2,8 +2,6 @@ import streamlit as st
 import requests
 
 from src.config.constants import API_URL
-from src.loaders.model_loader import load_regression_model
-from src.models.reg_prediction import reg_predict
 
 def run_app():
     st.set_page_config(

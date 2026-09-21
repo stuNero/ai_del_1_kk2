@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import re
 
-from src.loaders.clean_data import reg_ordinal_encode, prune_data
+from src.loaders.clean_data import reg_ordinal_encode, prune_data, reg_nominal_encode
 
 class TestRegOrdinalEncode():
     def test_raises_typeerror_when_values_is_not_a_list(self, one_row_df):
@@ -77,3 +77,33 @@ class TestPruneData:
     def test_returns_pd_dataframe_without_na_values(self):
         df = prune_data(data=pd.DataFrame({"test_column": [1,np.nan], "test_column_2":[1,2]}), columns=["test_column"])
         assert int(df.isnull().sum().iloc[0]) == 0
+
+class TestNominalEncode:
+    def test_raises_typeerror_when_data_is_not_type_pd_dataframe(self):
+        with pytest.raises(TypeError, match="The `data` parameter must be a pandas DataFrame `pd.DataFrame`"):
+            reg_nominal_encode("not a dataframe", ["test_column"])
+        
+    def test_raises_typeerror_when_column_is_not_list(self):
+        with pytest.raises(TypeError, match="The `columns` parameter must be a list"):
+            reg_nominal_encode(pd.DataFrame({"test_column": [1,2,3]}), "test_column")
+    
+    def test_raises_valueerror_when_columns_is_empty(self):
+        with pytest.raises(ValueError, match="The `columns` parameter must be a non-empty list"):
+            reg_nominal_encode(pd.DataFrame({"test_column": [1,2,3]}), [])
+
+    def test_raises_keyerror_when_column_is_not_in_dataframe(self):
+        with pytest.raises(KeyError, match=re.escape("Column(s) not found in the `data` dataframe: ")):
+            reg_nominal_encode(pd.DataFrame({"test_column": [1,2,3]}), ["not_a_column"])
+
+    def test_raises_valueerror_if_dataframe_is_empty(self):
+        with pytest.raises(ValueError, match="The `data` dataframe has no rows"):
+            reg_nominal_encode(pd.DataFrame({}), ["test_column"])
+
+    def test_returns_pd_dataframe(self):
+        df = reg_nominal_encode(pd.DataFrame({"test_column": ["test_value_1","test_value_2","test_value_3"]}), ["test_column"])
+        assert isinstance(df, pd.DataFrame)
+    
+    def test_returns_pd_dataframe_with_nominal_columns(self):
+        df = reg_nominal_encode(pd.DataFrame({"test_column": ["test_value_1","test_value_2","test_value_3"]}), ["test_column"])
+        expected = ["test_column_test_value_1", "test_column_test_value_2", "test_column_test_value_3"]
+        assert all(col in df.columns.to_list() for col in expected)

@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 import re
 import sqlite3
 from contextlib import closing
-from src.api.model_api import fetch_model, load_regression_model
+from src.loaders.model_loader import fetch_model, load_regression_model
 from sklearn.pipeline import Pipeline
 
 class TestFetchModel:

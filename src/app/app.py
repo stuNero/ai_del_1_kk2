@@ -1,6 +1,6 @@
 import streamlit as st
 
-from src.api.model_api import load_regression_model
+from src.loaders.model_loader import load_regression_model
 from src.models.reg_prediction import reg_predict
 
 def run_app():

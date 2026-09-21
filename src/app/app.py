@@ -1,5 +1,7 @@
 import streamlit as st
+import requests
 
+from src.config.constants import API_URL
 from src.loaders.model_loader import load_regression_model
 from src.models.reg_prediction import reg_predict
 
@@ -22,8 +24,6 @@ def run_app():
         unsafe_allow_html=True
     )
 
-    with st.spinner("Loading page..."):
-        regression_model = load_regression_model()
 
     with st.container():
         st.markdown(
@@ -80,8 +80,13 @@ def run_app():
 
 
     if st.button("Predict"):
-        prediction = reg_predict(regression_model, raw_input)
-        st.write(prediction)
+        with st.spinner("Loading page..."):
+            response = requests.post(f"{API_URL}/prediction", json=raw_input)
+
+        if response.ok:
+            st.write(f"Predicted burnout score: {response.json()}")
+        else:
+            st.error(f"Prediction failed ({response.status_code}): {response.text}")
 
 if __name__ == "__main__":
     run_app()

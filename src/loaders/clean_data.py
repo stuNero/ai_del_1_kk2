@@ -102,18 +102,18 @@ def reg_nominal_encode(data: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
     """
     if not isinstance(data, pd.DataFrame):
         raise TypeError("The `data` parameter must be a pandas DataFrame `pd.DataFrame`")
+    if data.empty:
+        raise ValueError("The `data` dataframe has no rows")
 
     if not isinstance(columns, list):
         raise TypeError("The `columns` parameter must be a list")
     if len(columns) < 1:
-        raise TypeError("The `columns` parameter must be a non-empty list")
+        raise ValueError("The `columns` parameter must be a non-empty list")
 
     missing = [col for col in columns if col not in data.columns]
     if missing:
         raise KeyError(f"Column(s) not found in the `data` dataframe: {missing}")
 
-    if data.empty:
-        raise ValueError("The `data` dataframe has no rows")
 
     data = data.copy()
     return pd.get_dummies(data, columns=columns)

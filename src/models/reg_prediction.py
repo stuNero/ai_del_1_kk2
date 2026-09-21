@@ -1,8 +1,9 @@
 from typing import Any, Mapping
 import pandas as pd
 from src.config.constants import REG_FEATURE_COLUMNS
+from typing import List
 
-def reg_prepare_features(raw_input: Mapping[str, Any]) -> pd.DataFrame:
+def reg_prepare_features(raw_input: Mapping[str, Any], required_keys:List[str]=REG_FEATURE_COLUMNS) -> pd.DataFrame:
     """
     Args:
         `raw_input`: A **mapping** containing the raw input values required to build
@@ -20,19 +21,10 @@ def reg_prepare_features(raw_input: Mapping[str, Any]) -> pd.DataFrame:
     """
     if not isinstance(raw_input, Mapping):
         raise TypeError("The `raw_input` parameter must be a `Mapping`")
+    
+    if not isinstance(required_keys, List):
+        raise TypeError("The `required_keys` parameter must be a `List`")
 
-    required_keys = (
-        "mental_health",
-        "stress_level",
-        "work_hours_per_week",
-        "screen_time_hours",
-        "meditation_minutes",
-        "sleep_hours",
-        "sleep_quality",
-        "physical_activity_hours",
-        "chronic_stress_no",
-        "chronic_stress_yes",
-    )
     missing = [key for key in required_keys if key not in raw_input]
     if missing:
         raise KeyError(f"`raw_input` is missing required keys: {missing}")

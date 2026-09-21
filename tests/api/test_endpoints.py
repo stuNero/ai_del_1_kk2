@@ -17,7 +17,8 @@ def test_prediction_returns_200(valid_raw_input, monkeypatch):
     assert response.status_code == 200
     assert response.json() == 42
 
-def test_prediction_returns_integer(valid_raw_input):
+def test_prediction_returns_integer(valid_raw_input, monkeypatch):
+    monkeypatch.setattr("src.api.endpoints.reg_predict", lambda model, input:42)
     response = client.post("/prediction",json=valid_raw_input)
     assert type(response.json()) == int
 

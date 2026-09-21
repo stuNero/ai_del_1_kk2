@@ -17,5 +17,6 @@
 ***- Creator adds relevant code to be reviewed***
 ***- Reviewer checks off if working***
 
+- [ ] Run `pip install -r requirements.txt` from root
 - [ ] *Ex. added button to homepage..*
 - [ ] ...

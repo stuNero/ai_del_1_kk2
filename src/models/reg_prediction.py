@@ -25,11 +25,14 @@ def reg_prepare_features(raw_input: Mapping[str, Any], required_keys:List[str]=R
     if not isinstance(required_keys, List):
         raise TypeError("The `required_keys` parameter must be a `List`")
 
-    missing = [key for key in required_keys if key not in raw_input]
+    raw_input_lower = {str(k).lower(): v for k, v in raw_input.items()}
+    required_keys_lower = [w.lower() for w in required_keys]
+
+    missing = [key for key in required_keys_lower if key not in raw_input_lower]
     if missing:
         raise KeyError(f"`raw_input` is missing required keys: {missing}")
 
-    values = [raw_input[key] for key in required_keys]
+    values = [raw_input_lower[key] for key in required_keys_lower]
     return pd.DataFrame([values], columns=REG_FEATURE_COLUMNS)
 
 def reg_predict(model: Any, raw_input: Mapping[str, Any]) -> Any:

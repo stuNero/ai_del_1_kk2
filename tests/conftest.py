@@ -4,6 +4,14 @@ import sqlite3
 from src.config.constants import REG_RAW_TABLE_NAME
 
 @pytest.fixture
+def test_table_name():
+    return "test_table"
+
+@pytest.fixture
+def one_row_df():
+    return pd.DataFrame({"a": [1]})
+
+@pytest.fixture
 def csv_path(tmp_path):
     return tmp_path / "fake.csv"
 

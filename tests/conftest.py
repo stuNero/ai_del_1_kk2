@@ -3,6 +3,13 @@ import pandas as pd
 import sqlite3
 from src.config.constants import REG_RAW_TABLE_NAME, REG_FEATURE_COLUMNS
 from unittest.mock import MagicMock
+from fastapi.testclient import TestClient
+from src.api.endpoints import app
+
+@pytest.fixture
+def client():
+    with TestClient(app) as client:
+        yield client
 
 @pytest.fixture
 def valid_raw_input():

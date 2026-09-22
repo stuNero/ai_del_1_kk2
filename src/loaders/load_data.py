@@ -1,35 +1,29 @@
 from contextlib import closing
 from pathlib import Path
 import pandas as pd
-import io, zipfile, requests, sqlite3, logging, sys
+import io, zipfile, requests, sqlite3, logging
 from src.config.paths import DB_PATH, DATASET_FALLBACK_PATH
 from src.config.constants import REG_RAW_TABLE_NAME, KAGGLE_DATASET_URL
 
 logger = logging.getLogger(__name__)
 
-def load_dataset(url: str = KAGGLE_DATASET_URL) -> pd.DataFrame:
-
-    def fetch_url(url: str) -> zipfile:
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-            return response._content
-        except requests.exceptions.RequestException as error:
-            raise ConnectionError(f"Could not download dataset: {error}. Try downloading the ZIP file and put it in the root folder") from error
-    
-    def fetch_file(path: str | Path = DATASET_FALLBACK_PATH ) -> bytes:
-        try:
-            return Path(path).read_bytes()
-        except OSError as error:
-            raise ConnectionError(f"Could not read dataset file: {error}") from error
-    
-    if isinstance(url, str) and url.startswith(("http://", "https://")):
-        dataset_content = fetch_url(url)
-    else:
-        dataset_content = fetch_file(DATASET_FALLBACK_PATH)
-    
+def fetch_url(url: str = KAGGLE_DATASET_URL) -> bytes:
     try:
-        with zipfile.ZipFile(io.BytesIO(dataset_content)) as z:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response._content
+    except requests.exceptions.RequestException as error:
+        raise ConnectionError(f"Could not download dataset: {error}. Try downloading the ZIP file and put it in the root folder") from error
+
+def fetch_file(path: str | Path = DATASET_FALLBACK_PATH ) -> bytes:
+    try:
+        return Path(path).read_bytes()
+    except OSError as error:
+        raise ConnectionError(f"Could not read file: {error}") from error
+
+def load_dataset(bytes_file: bytes) -> pd.DataFrame:
+    try:
+        with zipfile.ZipFile(io.BytesIO(bytes_file)) as z:
             print ("Files", z.namelist())
             
             csv_name = next(name for name in z.namelist() if name.lower().endswith(".csv"))
@@ -64,9 +58,13 @@ def load_from_db(db_path:Path=DB_PATH, table_name:str=REG_RAW_TABLE_NAME) -> pd.
         raise ConnectionError(f"Error while loading from database: {e}" ) from e
     return df
 
-def run_pipeline(db_path:Path=DB_PATH):
+def run_pipeline(dataset_url:str = KAGGLE_DATASET_URL, fallback_path:str = DATASET_FALLBACK_PATH, db_path:Path=DB_PATH):
+    try:
+        data_zip = fetch_url(dataset_url)
+    except:
+        data_zip = fetch_file(fallback_path)
     
-    df = load_dataset()
+    df = load_dataset(data_zip)
     
     save_to_db(df, db_path=db_path)
 

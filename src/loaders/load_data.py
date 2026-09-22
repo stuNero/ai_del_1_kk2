@@ -56,13 +56,19 @@ def load_from_db(db_path:Path=DB_PATH, table_name:str=REG_RAW_TABLE_NAME) -> pd.
         raise ConnectionError(f"Error while loading from database: {e}" ) from e
     return df
 
-def run_pipeline(dataset_url:str = KAGGLE_DATASET_URL, fallback_path:str = DATASET_FALLBACK_PATH, db_path:Path=DB_PATH):
+def load_dataset_pipeline(dataset_url: str = KAGGLE_DATASET_URL, fallback_path: str = DATASET_FALLBACK_PATH) -> pd.DataFrame:
     try:
         data_zip = fetch_url(dataset_url)
     except:
         data_zip = fetch_file(fallback_path)
     
     df = load_dataset(data_zip)
+    
+    return df
+
+def run_pipeline(dataset_url: str = KAGGLE_DATASET_URL, fallback_path: str = DATASET_FALLBACK_PATH, db_path:Path=DB_PATH):
+    
+    df = load_dataset_pipeline(dataset_url, fallback_path)
     
     save_to_db(df, db_path=db_path)
 

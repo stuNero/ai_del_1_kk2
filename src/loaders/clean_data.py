@@ -3,7 +3,11 @@ from typing import List
 import pandas as pd
 from sklearn.preprocessing import OrdinalEncoder
 
-from src.config.constants import REG_RAW_COLUMNS, REG_ORDINAL_COLUMNS, REG_NOMINAL_COLUMNS, REG_CLEAN_TABLE_NAME, REG_RAW_TABLE_NAME
+from src.config.constants import (REG_RAW_COLUMNS, 
+                                  REG_ORDINAL_COLUMNS, 
+                                  REG_NOMINAL_COLUMNS, 
+                                  REG_CLEAN_TABLE_NAME, 
+                                  REG_RAW_TABLE_NAME)
 from src.loaders.load_data import load_from_db, save_to_db
 
 def reg_ordinal_encode(data: pd.DataFrame, column: str, values: List[str]) -> pd.DataFrame:

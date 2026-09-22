@@ -1,23 +1,35 @@
-import sqlite3
 from contextlib import closing
 from pathlib import Path
 import pandas as pd
-import io
-import zipfile
-import requests
-from src.config.paths import DB_PATH
+import io, zipfile, requests, sqlite3, logging, sys
+from src.config.paths import DB_PATH, DATASET_FALLBACK_PATH
 from src.config.constants import REG_RAW_TABLE_NAME, KAGGLE_DATASET_URL
 
-def load_dataset(url:str = KAGGLE_DATASET_URL) -> pd.DataFrame:
+logger = logging.getLogger(__name__)
 
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-    except requests.exceptions.RequestException as error:
-        raise ConnectionError(f"Could not dowload dataset: {error}") from error
+def load_dataset(url: str = KAGGLE_DATASET_URL) -> pd.DataFrame:
 
+    def fetch_url(url: str) -> zipfile:
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            return response._content
+        except requests.exceptions.RequestException as error:
+            raise ConnectionError(f"Could not download dataset: {error}. Try downloading the ZIP file and put it in the root folder") from error
+    
+    def fetch_file(path: str | Path = DATASET_FALLBACK_PATH ) -> bytes:
+        try:
+            return Path(path).read_bytes()
+        except OSError as error:
+            raise ConnectionError(f"Could not read dataset file: {error}") from error
+    
+    if isinstance(url, str) and url.startswith(("http://", "https://")):
+        dataset_content = fetch_url(url)
+    else:
+        dataset_content = fetch_file(DATASET_FALLBACK_PATH)
+    
     try:
-        with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+        with zipfile.ZipFile(io.BytesIO(dataset_content)) as z:
             print ("Files", z.namelist())
             
             csv_name = next(name for name in z.namelist() if name.lower().endswith(".csv"))

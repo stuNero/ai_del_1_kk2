@@ -1,11 +1,9 @@
 from contextlib import closing
 from pathlib import Path
 import pandas as pd
-import io, zipfile, requests, sqlite3, logging
+import io, zipfile, requests, sqlite3
 from src.config.paths import DB_PATH, DATASET_FALLBACK_PATH
 from src.config.constants import REG_RAW_TABLE_NAME, KAGGLE_DATASET_URL
-
-logger = logging.getLogger(__name__)
 
 def fetch_url(url: str = KAGGLE_DATASET_URL) -> bytes:
     try:

@@ -1,23 +1,35 @@
-import os
-import pytest
+import os, pytest, sqlite3, responses, re
 import pandas as pd
-import sqlite3
-import requests
-import responses
-from src.loaders.load_data import load_from_db, save_to_db, load_dataset
+from src.loaders.load_data import (load_from_db, 
+                                   save_to_db, 
+                                   load_dataset, 
+                                   fetch_file, fetch_url)
 from src.config.constants import KAGGLE_DATASET_URL
-# test
-class TestLoadDataset:
-    def test_returns_pd_dataframe(self):
-        assert isinstance(load_dataset(url=KAGGLE_DATASET_URL), pd.DataFrame)
-    
+
+class TestFetchUrl:
+    def test_returns_bytes(self):
+        assert isinstance(fetch_url(KAGGLE_DATASET_URL), bytes)
+
     @responses.activate
     def test_raises_httperror_if_faulty_url(self):
         url = "https://example.com/data.csv"
         responses.add(responses.GET, url, status=404)
 
         with pytest.raises(ConnectionError):
-            load_dataset(url)
+            fetch_url(url)
+
+class TestFetchFile:
+    def test_returns_bytes(self, csv_zip_file):
+        assert isinstance(fetch_file(csv_zip_file), bytes)
+
+    def test_raises_connectionerror_on_faulty_path(self):
+        with pytest.raises(ConnectionError, match=re.escape("Could not read file:")):
+            fetch_file("not_a_path")
+
+class TestLoadDataset:
+    def test_returns_pd_dataframe(self, csv_zip_bytes):
+        assert isinstance(load_dataset(bytes_file=csv_zip_bytes), pd.DataFrame)
+
 
 class TestLoadFromDb:
     def test_returns_df(self, db_with_filled_table):

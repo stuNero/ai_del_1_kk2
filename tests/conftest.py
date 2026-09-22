@@ -1,6 +1,5 @@
-import pytest
+import pytest, sqlite3, zipfile, io
 import pandas as pd
-import sqlite3
 from src.config.constants import REG_RAW_TABLE_NAME, REG_FEATURE_COLUMNS
 from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
@@ -38,6 +37,23 @@ def one_row_df():
 @pytest.fixture
 def csv_path(tmp_path):
     return tmp_path / "fake.csv"
+
+@pytest.fixture
+def zip_path(tmp_path):
+    return tmp_path / "fake.zip"
+
+@pytest.fixture
+def csv_zip_bytes():
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        zf.writestr("fake.csv", "a\n1\n")
+    return buf.getvalue()
+
+@pytest.fixture
+def csv_zip_file(zip_path, existing_csv_file_with_row):
+    with zipfile.ZipFile(zip_path, "w") as zip_ref:
+        zip_ref.write(existing_csv_file_with_row, arcname=existing_csv_file_with_row.name)
+    return zip_path
 
 @pytest.fixture
 def existing_csv_file_with_row(csv_path):

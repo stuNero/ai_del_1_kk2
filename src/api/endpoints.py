@@ -1,11 +1,16 @@
 from fastapi import FastAPI, HTTPException
-
+from contextlib import asynccontextmanager
 from src.loaders.model_loader import load_regression_model
 from src.models.reg_prediction import reg_predict
 
-model = load_regression_model()
+@asynccontextmanager
+async def lifespan(app:FastAPI):
+    app.state.reg_model = load_regression_model()
+    print("Model loaded, server starting...")
+    yield
+    print("Server shutting down, cleaning up")
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 @app.get("/health")
 async def health():
@@ -15,7 +20,7 @@ async def health():
 async def prediction(input: dict) -> int:
     prediction = None
     try:
-        prediction = reg_predict(model, input)
+        prediction = reg_predict(app.state.reg_model, input)
     except Exception as err:
         raise HTTPException(status_code=400, detail=str(err))
     

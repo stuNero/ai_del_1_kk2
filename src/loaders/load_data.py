@@ -2,26 +2,31 @@ import sqlite3
 from contextlib import closing
 from pathlib import Path
 import pandas as pd
-from src.config.paths import DB_PATH, DATA_PATH
-from src.config.constants import REG_RAW_TABLE_NAME
+import io
+import zipfile
+import requests
+from src.config.paths import DB_PATH
+from src.config.constants import REG_RAW_TABLE_NAME, KAGGLE_DATASET_URL
 
+def load_dataset(url:str = KAGGLE_DATASET_URL) -> pd.DataFrame:
 
-def ensure_dataset_exists(csv_path: Path = DATA_PATH) -> Path:
-    if not csv_path.exists():
-        raise FileNotFoundError(
-            f"Dataset not found at {csv_path}. "
-            "Download the CSV and place it in the project root data/ folder before running the app."
-        )
-    return csv_path
-
-
-def load_from_db(db_path:Path=DB_PATH, table_name:str=REG_RAW_TABLE_NAME) -> pd.DataFrame:
     try:
-        with closing(sqlite3.connect(db_path)) as conn:
-            df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
-    except Exception as e:
-        raise ConnectionError(f"Error while loading from database: {e}" ) from e
-    return df
+        response = requests.get(url)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as error:
+        raise ConnectionError(f"Could not dowload dataset: {error}") from error
+
+    try:
+        with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+            print ("Files", z.namelist())
+            
+            csv_name = next(name for name in z.namelist() if name.lower().endswith(".csv"))
+            
+            df = pd.read_csv(z.open(csv_name))
+            
+            return df
+    except (zipfile.BadZipFile, StopIteration, pd.errors.ParserError) as error:
+        raise ValueError(f"Invalid dataset archive: {error}") from error
 
 def save_to_db(df:pd.DataFrame, db_path:Path=DB_PATH, table_name:str=REG_RAW_TABLE_NAME):
     db_path = Path(db_path)
@@ -39,20 +44,19 @@ def save_to_db(df:pd.DataFrame, db_path:Path=DB_PATH, table_name:str=REG_RAW_TAB
         print(f"Database [{db_path.name}] created!")
     print(f"Table [{table_name}] in database [{db_path.name}] saved successfully!")
 
-def load_csv(csv_path:Path=DATA_PATH) -> pd.DataFrame:
-    df = pd.read_csv(csv_path)
-    if len(df) == 0:
-        raise ValueError(f"Dataframe has no rows")
-    print(f"csv loaded with {len(df):,} rows")
+def load_from_db(db_path:Path=DB_PATH, table_name:str=REG_RAW_TABLE_NAME) -> pd.DataFrame:
+    try:
+        with closing(sqlite3.connect(db_path)) as conn:
+            df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
+    except Exception as e:
+        raise ConnectionError(f"Error while loading from database: {e}" ) from e
     return df
 
-def run_pipeline(csv_path:Path=DATA_PATH, db_path:Path=DB_PATH):
+def run_pipeline(db_path:Path=DB_PATH):
     
-    csv_path = ensure_dataset_exists(csv_path=csv_path)
+    df = load_dataset()
     
-    df = load_csv(csv_path)
-
     save_to_db(df, db_path=db_path)
 
 if __name__ == "__main__":
-    run_pipeline(csv_path=DATA_PATH, db_path=DB_PATH)
+    run_pipeline(db_path=DB_PATH)

@@ -2,6 +2,7 @@ from typing import Any, Mapping
 import pandas as pd
 from src.config.constants import REG_FEATURE_COLUMNS
 from typing import List
+from sklearn.pipeline import Pipeline
 
 def reg_prepare_features(raw_input: Mapping[str, Any], required_keys:List[str]=REG_FEATURE_COLUMNS) -> pd.DataFrame:
     """
@@ -35,7 +36,18 @@ def reg_prepare_features(raw_input: Mapping[str, Any], required_keys:List[str]=R
     values = [raw_input_lower[key] for key in required_keys_lower]
     return pd.DataFrame([values], columns=REG_FEATURE_COLUMNS)
 
-def reg_predict(model: Any, raw_input: Mapping[str, Any]) -> Any:
+def process_prediction(raw_prediction: float) -> int:
+    if not isinstance(raw_prediction, float):
+        raise TypeError("Input must be float.")
+    
+    if raw_prediction < 0:
+        return 0
+    elif raw_prediction > 100:
+        return 100
+    else:
+        return round(raw_prediction, None)
+
+def reg_predict(model: Pipeline, raw_input: Mapping[str, Any]) -> int:
     """
     Args:
         `model`: A fitted model exposing a scikit-learn-style `predict` method.
@@ -57,4 +69,5 @@ def reg_predict(model: Any, raw_input: Mapping[str, Any]) -> Any:
         raise TypeError("The `model` parameter must implement a callable `predict` method")
 
     features = reg_prepare_features(raw_input)
-    return round(model.predict(features)[0], None)
+        
+    return process_prediction(model.predict(features)[0])

@@ -41,6 +41,14 @@ cd src/models
 python reg_model_eval.py
 ```
 
+Start the backend
+```bash
+py -m uvicorn src.api.endpoints:app --reload
+```
+
+Open the URL shown in the terminal, usually `http://localhost:8000`. The endpoints can be tested using Swagger att `http://localhost:8000/docs`
+
+
 Start the Streamlit app from the `src` directory:
 
 ```bash
@@ -50,3 +58,14 @@ streamlit run app.py
 (add `server.headless true` after `run app.py` to avoid the browser opening automatically)
 
 Open the URL shown in the terminal, usually `http://localhost:8501`.
+
+
+#### To run tests
+
+From the project root:
+
+```bash
+pytest -v
+```
+
+**IMPORTANT** the database and tables `burnout_data`, `burnout_data_clean` and `models` should be created and populated for the tests to work. It's recommended to run the whole application or at least the steps needed to create the mentioned components.

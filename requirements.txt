@@ -1,4 +1,6 @@
 altair==6.2.2
+annotated-doc==0.0.5
+annotated-types==0.8.0
 anyio==4.15.1
 appnope==1.0.0
 asttokens==3.0.2
@@ -14,9 +16,13 @@ coverage==7.16.1
 cycler==0.12.1
 debugpy==1.8.21
 executing==2.2.1
+fastapi==0.141.1
 fonttools==4.65.0
 h11==0.16.0
+httpcore==1.0.9
+httpcore2==2.13.0
 httptools==0.8.0
+httpx2==2.13.0
 idna==3.19
 iniconfig==2.3.0
 ipykernel==7.3.0
@@ -50,6 +56,8 @@ psutil==7.2.2
 ptyprocess==0.7.0
 pure_eval==0.2.4
 pyarrow==25.0.1
+pydantic==2.13.5
+pydantic_core==2.46.5
 pydeck==0.9.3
 Pygments==2.21.0
 pyparsing==3.3.2
@@ -58,9 +66,11 @@ pytest-cov==7.1.0
 pytest-mock==3.15.1
 python-dateutil==2.9.0.post0
 python-multipart==0.0.32
+PyYAML==6.0.3
 pyzmq==27.2.0
 referencing==0.37.0
 requests==2.34.2
+responses==0.26.3
 rpds-py==2026.6.3
 scikit-learn==1.9.1
 scipy==1.18.1
@@ -73,6 +83,8 @@ threadpoolctl==3.6.0
 toml==0.10.2
 tornado==6.5.9
 traitlets==5.16.1
+truststore==0.10.4
+typing-inspection==0.4.4
 typing_extensions==4.16.0
 tzdata==2026.4
 urllib3==2.7.0

@@ -7,6 +7,13 @@ ordinal encoding orders, and other shared config values.
 Keeping these here avoids duplicating literals across multiple
 files/notebooks and keeps them in sync if columns change.
 """
+# DATASET
+
+KAGGLE_DATASET_URL = "https://www.kaggle.com/api/v1/datasets/download/mobeenfatimah/mental-health-and-burnout-prediction-dataset"
+
+# API ADDRESS
+
+API_URL = "http://127.0.0.1:8000"
 
 # REGRESSION CONSTANS
 REG_RAW_COLUMNS = [

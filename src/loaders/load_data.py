@@ -1,23 +1,27 @@
-import sqlite3
 from contextlib import closing
 from pathlib import Path
 import pandas as pd
-import io
-import zipfile
-import requests
-from src.config.paths import DB_PATH
+import io, zipfile, requests, sqlite3
+from src.config.paths import DB_PATH, DATASET_FALLBACK_PATH
 from src.config.constants import REG_RAW_TABLE_NAME, KAGGLE_DATASET_URL
 
-def load_dataset(url:str = KAGGLE_DATASET_URL) -> pd.DataFrame:
-
+def fetch_url(url: str = KAGGLE_DATASET_URL) -> bytes:
     try:
         response = requests.get(url)
         response.raise_for_status()
+        return response._content
     except requests.exceptions.RequestException as error:
-        raise ConnectionError(f"Could not dowload dataset: {error}") from error
+        raise ConnectionError(f"Could not download dataset: {error}. Try downloading the ZIP file and put it in the root folder") from error
 
+def fetch_file(path: str | Path = DATASET_FALLBACK_PATH ) -> bytes:
     try:
-        with zipfile.ZipFile(io.BytesIO(response.content)) as z:
+        return Path(path).read_bytes()
+    except OSError as error:
+        raise ConnectionError(f"Could not read file: {error}") from error
+
+def load_dataset(bytes_file: bytes) -> pd.DataFrame:
+    try:
+        with zipfile.ZipFile(io.BytesIO(bytes_file)) as z:
             print ("Files", z.namelist())
             
             csv_name = next(name for name in z.namelist() if name.lower().endswith(".csv"))
@@ -52,9 +56,19 @@ def load_from_db(db_path:Path=DB_PATH, table_name:str=REG_RAW_TABLE_NAME) -> pd.
         raise ConnectionError(f"Error while loading from database: {e}" ) from e
     return df
 
-def run_pipeline(db_path:Path=DB_PATH):
+def load_dataset_pipeline(dataset_url: str = KAGGLE_DATASET_URL, fallback_path: str = DATASET_FALLBACK_PATH) -> pd.DataFrame:
+    try:
+        data_zip = fetch_url(dataset_url)
+    except:
+        data_zip = fetch_file(fallback_path)
     
-    df = load_dataset()
+    df = load_dataset(data_zip)
+    
+    return df
+
+def run_pipeline(dataset_url: str = KAGGLE_DATASET_URL, fallback_path: str = DATASET_FALLBACK_PATH, db_path:Path=DB_PATH):
+    
+    df = load_dataset_pipeline(dataset_url, fallback_path)
     
     save_to_db(df, db_path=db_path)
 

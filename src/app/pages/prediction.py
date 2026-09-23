@@ -177,24 +177,17 @@ else:
             response = requests.post(f"{API_URL}/prediction", json=payload, timeout=10)
 
             if response.ok:
-                raw_score = response.json()
+                score = round(response.json())
 
-                # Normalisera score till 0-100
-                if raw_score > 10:
-                    score = min(10, (raw_score / 100) * 10)
-                else:
-                    score = raw_score
-
-                # Score display
                 with st.container(border=True, key="result_card"):
-                    # Risknivå + färger
-                    if score <= 3:
+
+                    if score <= 33:
                         risk_level = "Low Risk"
                         risk_color = "#4ade80"
                         risk_bg = "rgba(74, 222, 128, 0.1)"
                         risk_border = "rgba(74, 222, 128, 0.35)"
                         risk_message = "Your responses indicate a low risk of burnout. Keep taking care of your mental and physical well-being."
-                    elif score <= 6:
+                    elif score <= 66:
                         risk_level = "Moderate Risk"
                         risk_color = "#fbbf24"
                         risk_bg = "rgba(251, 191, 36, 0.1)"
@@ -207,25 +200,22 @@ else:
                         risk_border = "rgba(248, 113, 113, 0.35)"
                         risk_message = "Your responses indicate a high risk of burnout. Please consider talking to a mental health professional."
 
-                    risk_pct = int((score / 10) * 100)
-                    score_display = risk_pct
-
                     st.markdown(
                         f"""
                         <div class="score-container">
                             <div class="score-eyebrow">Burnout Score</div>
                             <div class="score-value">
-                                <span style="color:{risk_color};">{score_display}</span>
+                                <span style="color:{risk_color};">{score}</span>
                                 <span class="score-value-unit"> / 100</span>
                             </div>
                         </div>
 
                         <div class="risk-summary-row">
-                            <span class="risk-summary-label">Burnout Risk Level: {risk_pct}%</span>
+                            <span class="risk-summary-label">Burnout Risk Level: {score}%</span>
                             <span class="risk-summary-value" style="color:{risk_color};">{risk_level}</span>
                         </div>
                         <div class="risk-track">
-                            <div class="risk-fill" style="width:{risk_pct}%; background:{risk_color};"></div>
+                            <div class="risk-fill" style="width:{score}%; background:{risk_color};"></div>
                         </div>
 
                         <div class="risk-box" style="background:{risk_bg}; border:1px solid {risk_border};">
@@ -293,6 +283,7 @@ else:
                             }
                         )
 
+                    # Topp 3 värst – störst avvikelse från hälsosamt spann först
                     recommendations = sorted(
                         recommendations, key=lambda r: r["severity"], reverse=True
                     )[:3]

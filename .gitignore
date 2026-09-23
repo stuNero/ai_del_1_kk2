@@ -4,6 +4,7 @@ __pycache__/
 db/
 /data/
 .DS_Store
+*.zip
 
 # obsidian and notes
 .obsidian/

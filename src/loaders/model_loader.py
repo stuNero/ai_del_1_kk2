@@ -1,16 +1,12 @@
-import sqlite3
-import joblib
-import io
+import sqlite3, joblib, io
 from contextlib import closing
 from pathlib import Path
 from sklearn.pipeline import Pipeline
 
 from src.config.paths import DB_PATH
 
-DEFAULT_DB_PATH = DB_PATH
 
-
-def fetch_model(model_type: str, db_path: str | Path = DEFAULT_DB_PATH) -> Pipeline:
+def fetch_model(model_type: str, db_path: str | Path = DB_PATH) -> Pipeline:
     """loads the model from the database and returns it
     Args: 
         model_type: The type of the model to retrieve. Valid values: 
@@ -37,5 +33,5 @@ def fetch_model(model_type: str, db_path: str | Path = DEFAULT_DB_PATH) -> Pipel
     except sqlite3.Error as e:
         raise ConnectionError("Failed to connect to the database") from e
 
-def load_regression_model(db_path: str | Path = DEFAULT_DB_PATH) -> Pipeline:
+def load_regression_model(db_path: str | Path = DB_PATH) -> Pipeline:
     return fetch_model(model_type="regression", db_path=db_path)

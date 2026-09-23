@@ -1,6 +1,4 @@
-import sqlite3
-import subprocess
-import sys
+import sqlite3, subprocess, sys
 from pathlib import Path
 
 from src.config.paths import (

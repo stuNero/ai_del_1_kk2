@@ -1,7 +1,3 @@
----
-created: 2026-09-22 10:28
-updated: 2026-09-23 10:50
----
 ## Bakgrund till arbetet
 
 Först ville vi skapa en klassificerings modell som kunde ta emot bilder av t.ex hundraser eller svampar och prediktera deras ras/art, men läraren förklarade att det var lite överkurs och förmodligen för komplext, så vi valde bort allt som var bild relaterat. 
@@ -37,7 +33,7 @@ Sen fanns liknande kolumner som *anxiety_score* eller *stress_level* som vi hade
 - `contextlib`: Används mest i kombination med sqlite för att stänga anslutningar till databasen
 - `io`: Används för inläsning av bytes från filer såsom modellen i databasen
 - `time`: Används för mätning av tid för modellträning
-- `typing`: Används för typning av python funktion's parametrar
+- `typing`: Används flitigt för typning av python funktion parametrar och returvärden
 - `warnings`: Används för borttagningen av ofarliga varningar i konsollen
 - `zipfile`: Används för öppnandet av zipfiler, t.ex. dataset fallback metoden
 - `re`: Används vid regex matchning i testerna. 
@@ -70,3 +66,5 @@ Ovanstående Sci-Kit Learn paket används i hela modell pipelinen:
 ## Utvärdering av grupparbetet
 > vad har varit bra, vad har ni lärt er, hur har arbetet med Git & GitHub fungerat, något ni hade 
 > gjort annorlunda?
+
+Vi har som vanligt använt git som versionshantering, vi använde github issues när man hittade bugs som man i stunden inte har tid att fixa. Det blev dock inte jättemycket planering genom GH Projects utan vi valde att bara fokusera på det nästkommande problemet att lösa och delade upp uppgifterna mellan oss. Ingen av oss var klara med KK1 när vi började med KK2, så det var svårt att få till ett ordentligt startdatum, därför vi kom igång relativt sent med projektet, vi hade också svårt att välja dataset/modelltyp vilket också drog ut på tiden. 

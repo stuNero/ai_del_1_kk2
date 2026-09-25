@@ -21,7 +21,7 @@ from src.loaders.load_data import load_from_db
 
 from src.config.constants import REG_CLEAN_TABLE_NAME, REG_TARGET_COLUMN, REG_MODEL_TYPE, RANDOM_STATE
 
-# warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore")
 
 
 def load_and_split_data(table_name: str, target:str=REG_TARGET_COLUMN, db_path: Path = DB_PATH) -> Tuple[pd.DataFrame, pd.Series]:

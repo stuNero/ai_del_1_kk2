@@ -64,7 +64,7 @@ Ovanstående Sci-Kit Learn paket används i hela modell pipelinen:
 [EDA](notebooks/EDA.py) -> [Train -> Val -> Test](src/models/reg_model_eval.py)
 
 ## Utvärdering av grupparbetet
-> vad har varit bra, vad har ni lärt er, hur har arbetet med Git & GitHub fungerat, något ni hade 
-> gjort annorlunda?
 
-Vi har som vanligt använt git som versionshantering, vi använde github issues när man hittade bugs som man i stunden inte har tid att fixa. Det blev dock inte jättemycket planering genom GH Projects utan vi valde att bara fokusera på det nästkommande problemet att lösa och delade upp uppgifterna mellan oss. Ingen av oss var klara med KK1 när vi började med KK2, så det var svårt att få till ett ordentligt startdatum, därför kom vi igång relativt sent med projektet, vi hade också svårt att välja dataset/modelltyp vilket också drog ut på tiden. 
+I arbetet med features så var vi väldigt fokuserade och samarbetet funkade bra. En förbättring hade varit att ha fler och mer strukturerade stand-ups, att fokusera mer på det agila arbetssättet. 
+Vi gjorde tester som inte var en del av projektet, som Max föreslog vilket drog fokus från att utveckla mer features. I framtiden om man vill inkludera tester så ska de följa utvecklingen av projektet, inte läggas till i slutskedet. 
+Vi har som vanligt använt git som versionshantering, vi använde github issues när man hittade bugs som man i stunden inte har tid att fixa. Det blev dock inte jättemycket planering genom GH Projects utan vi valde att bara fokusera på det nästkommande problemet att lösa och delade upp uppgifterna mellan oss. Ingen av oss var klara med KK1 när vi började med KK2, så det var svårt att få till ett ordentligt startdatum, därför kom vi igång relativt sent med projektet, vi hade också svårt att välja dataset/modelltyp vilket också drog ut på tiden.

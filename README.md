@@ -1,4 +1,4 @@
-# ai_del_1_kk2
+# Burnout Predictor
 
 ## How to run
 
